@@ -17,7 +17,10 @@ class PDF(object):
     @return  :
     @author
     """
-    pass
+    print(filename)
+    f = open(filename[0], 'rb')
+    self.data = f.read()
+    f.close()
 
   def getPage(self, page):
     """
@@ -27,7 +30,9 @@ class PDF(object):
     @return list :
     @author
     """
-    pass
+    print(self.data)
+    lines = [(0, 0, 500, 500), (70, 100, 350, 200), (20, 460, 400, 10,), (150, 100, 400, 80)]
+    return lines
 
 
 
