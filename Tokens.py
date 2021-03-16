@@ -12,11 +12,9 @@ class Tokens(object):
 
   def __init__(self, data):
     """
-     Принимет список байт
+     Сохраняет строку (список байт) в классе
 
     @param list data : данные (список байт)
-    @return  :
-    @author
     """
     pass
 
@@ -25,9 +23,36 @@ class Tokens(object):
      Возвращает список токенов
 
     @return  :
-    @author
     """
     pass
 
 
+  def getNumber(self):
+    """
+     Извлекает число из строки.
+    Число из строки удаляется
 
+    @return  : int или float число
+    """
+    pass
+
+  def getBoolean(self):
+    """
+     Извлекает true или false из строки.
+    значение из строки удаляется
+
+    @return  : true или false
+    """
+    pass
+
+
+  def getString(self):
+    """
+     Извлекает строку в скобках из строки.
+    (111 22 33 44)
+    значение из строки удаляется
+
+    @return  : строка
+    """
+    pass
+  
