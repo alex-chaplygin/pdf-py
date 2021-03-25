@@ -27,6 +27,24 @@ class Tokens(object):
     """
     pass
 
+  def get_token(self):
+    """
+     Возвращает токен, удаляя его из data.
+    Удаляет разделители.
+    Анализирует первый символ.
+    Цифра - число
+    / - NameObject
+    Буква - ключевое слово (в виде строки) obj endobj stream endstream
+    true/false - логическое значение
+    null - None
+    ( - literal string
+    < - hex string
+    << - словарь
+    [ - массив
+    @return  : token
+    """
+    pass
+  
   def skip_whitespace(self):
     """
      Удаляет из строки разделители \x00 \x09 \x0a \x0c \x0d \x20 
@@ -89,7 +107,47 @@ class Tokens(object):
   def get_hex_string(self):
     """
      Извлекает строку в скобках из строки.
-    Примеры: <901FA3>
+    значение из строки data удаляется
+    Примеры: <901FA3> Возвращает b'\x90\x1f\xa3'
     @return  : байтовая строка
     """
     pass
+
+  def get_array_string(self):
+    """
+     Извлекает строку в скобках из строки. Внутренние скобки включаются в строку
+    массив из строки data удаляется
+    Примеры: [1 2 3 4] Возвращает "1 2 3 4"
+                     [ [1]  [2] ] Возвращает " [1] [2] "
+    @return  : строка массива
+    """
+    pass
+
+  def get_dictionary_string(self):
+    """
+     Извлекает строку словаря из строки. Внутренние скобки включаются в строку
+    словарь из строки data удаляется
+    Примеры: << /Name 1 >>          Возвращает " /Name 1 "
+                     << /Name 1
+                         /Dict << /M 2 >>
+                     >> Возвращает " /Name 1
+                         /Dict << /M 2 >> "
+    @return  : строка словаря
+    """
+    pass
+  
+  def get_null(self):
+    """
+     Извлекает из data null
+    @return  : значение None
+    """
+    pass
+
+  def get_stream(self):
+    """
+     Извлекает байтовую строку между stream(новая строка \n или \n\r)  и endstream
+    значение из строки data удаляется
+    @return  : байтовая строка
+    """
+    pass
+  
