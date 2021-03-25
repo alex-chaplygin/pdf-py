@@ -16,10 +16,10 @@ class PDF(object):
     f = open(filename[0], 'rb')
     self.data = f.read()
     f.close()
-    self.version = self.getVersion()
+    self.version = self.get_version()
     print(self.version)
 
-  def getPage(self, page):
+  def get_page(self, page):
     """
      Возвращает список графических примитивов
 
@@ -31,7 +31,7 @@ class PDF(object):
     return lines
 
 
-  def getVersion(self):
+  def get_version(self):
     """
      Возвращает версию PDF как строку
     self.data - данные из файла
