@@ -9,6 +9,10 @@ class PDF(object):
   def __init__(self, filename):
     """
      Читает PDF файл, загружает все данные
+    Заголовок - версия %PDF-1.4
+    Тело - список объектов
+    Таблица ссылок
+    Окончание - trailer Словарь startxref ссылка %%EOF
 
     @param string filename : имя файла
     """
@@ -44,7 +48,9 @@ class PDF(object):
 
   def parse_objects(self):
     """
+    разбивает данные на строки байт
     преобразует данные файла в список токенов (класс Tokens)
+    пока не встретится Keyword('xref')
     создает словарь из объектов (objects)
     ключ (номер_объекта, номер поколения)
     значение - данные объекта (токен)
@@ -58,3 +64,14 @@ class PDF(object):
     """
     pass
   
+  def parse_objects(self):
+    """
+    загружает из данных таблицу ссылок
+    """
+    pass
+
+  def parse_trailer(self):
+    """
+    загружает из данных словарь параметров файла trailer
+    """
+    pass
