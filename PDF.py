@@ -64,7 +64,7 @@ class PDF(object):
     """
     pass
   
-  def parse_objects(self):
+  def parse_xref(self):
     """
     загружает из данных таблицу ссылок
     """
