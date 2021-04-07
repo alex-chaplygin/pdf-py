@@ -14,7 +14,7 @@ class Tokens(object):
     """
      Сохраняет строку в классе
 
-    @param list data : данные 
+    @param list data : строка в классе
     """
     self.data = data
 
