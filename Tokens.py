@@ -12,21 +12,24 @@ class Tokens(object):
 
   def __init__(self, data):
     """
-     Сохраняет строку (список байт) в классе
+     Сохраняет строку в классе
 
-    @param list data : данные (список байт)
+    @param list data : данные 
     """
-    pass
+    self.data = data
 
+    
   def get(self):
     """
      Возвращает список токенов.
     Удаляет комментарии, которые начинаются с % до конца строки
+    num1 num2 R заменяет на кортеж ссылки (num1, num2)
 
     @return  :
     """
     pass
 
+  
   def get_token(self):
     """
      Возвращает токен, удаляя его из data.
@@ -44,6 +47,7 @@ class Tokens(object):
     @return  : token
     """
     pass
+
   
   def skip_whitespace(self):
     """
@@ -51,6 +55,7 @@ class Tokens(object):
 
     """
     pass  
+
   
   def get_number(self):
     """
@@ -63,6 +68,7 @@ class Tokens(object):
     """
     pass
 
+  
   def get_boolean(self):
     """
      Извлекает true или false из строки.
@@ -102,8 +108,18 @@ class Tokens(object):
 
     @return  : строка
     """
-    pass
-  
+    c = 0
+    for i in range(len(self.data)):
+      if self.data[i] == '(':
+	c += 1
+	x = i + 1
+      if self.data[i] == ')':
+        c -= 1
+	y = i
+      if c == 0:
+	return self.data[1:y]
+
+      
   def get_hex_string(self):
     """
      Извлекает строку в скобках из строки.
@@ -111,8 +127,20 @@ class Tokens(object):
     Примеры: <901FA3> Возвращает b'\x90\x1f\xa3'
     @return  : байтовая строка
     """
-    pass
+    for i in range (len(self.data)):
+		if self.data[i] == '<':
+			z = i + 1  
+		if self.data[i] == '>':
+			q = i
+    s = self.data[1:q] 
+    ste = []
+	
+    for i in range(0, len(s), 2):
+      x = int(s[i:i+2], 16)
+      ste.append(x)
+    return bytes(ste)
 
+  
   def get_array_string(self):
     """
      Извлекает строку в скобках из строки. Внутренние скобки включаются в строку
@@ -123,6 +151,7 @@ class Tokens(object):
     """
     pass
 
+  
   def get_dictionary_string(self):
     """
      Извлекает строку словаря из строки. Внутренние скобки включаются в строку
@@ -135,19 +164,11 @@ class Tokens(object):
     @return  : строка словаря
     """
     pass
+
   
   def get_null(self):
     """
      Извлекает из data null
     @return  : значение None
     """
-    pass
-
-  def get_stream(self):
-    """
-     Извлекает байтовую строку между stream(новая строка \n или \n\r)  и endstream
-    значение из строки data удаляется
-    @return  : байтовая строка
-    """
-    pass
-  
+    pass  
