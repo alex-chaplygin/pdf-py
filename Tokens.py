@@ -163,7 +163,19 @@ class Tokens(object):
                          /Dict << /M 2 >> "
     @return  : строка словаря
     """
-    pass
+    c = 0
+    y =0
+    for i in range(len(self.data)):
+      if self.data[i] == '<':
+        c += 1
+        x = i + 1
+      if self.data[i] == '>':
+        c -= 1
+        y = i-1
+      if c == 0:
+        str2=self.data[2:y]
+        self.data=self.data[y+2:]
+        return str2
 
   
   def get_null(self):
