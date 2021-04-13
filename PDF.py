@@ -1,4 +1,5 @@
 # coding=UTF-8
+from Tokens import *
 
 class PDF(object):
 
@@ -17,12 +18,26 @@ class PDF(object):
     @param string filename : имя файла
     """
     print(filename)
-    f = open(filename[0], 'rb')
-    self.data = f.read()
-    f.close()
-    self.version = self.get_version()
-    print(self.version)
+    self.f = open(filename, 'rb')
+    self.f.seek(-1, 2)
+    xref = self.get_xrefpos()
+    print('xrefpos', xref)
+    self.f.seek(xref)
+    obj = self.read_object()
 
+
+  def read_object(self):
+    """
+    читает один объект PDF
+    """
+    s = ''
+    ls = []
+    while not 'stream' in s:
+      s = self.read_string()
+      ls.append(s)
+    t = Tokens(ls)
+    print(t.get())
+    
   def get_page(self, page):
     """
      Возвращает список графических примитивов
@@ -30,7 +45,6 @@ class PDF(object):
     @param page : номер страницы
     @return : список графических примитивов
     """
-    print(self.data)
     lines = [(0, 0, 500, 500), (70, 100, 350, 200), (20, 460, 400, 10,), (150, 100, 400, 80)]
     return lines
 
@@ -46,6 +60,7 @@ class PDF(object):
     """
     pass
 
+  
   def parse_objects(self):
     """
     выделяет из данных строки байт
@@ -56,19 +71,64 @@ class PDF(object):
     значение - данные объекта (токен)
     """
     pass
-  
-  def parse_xref(self):
-    """
-    загружает из данных таблицу ссылок
-    xref
-    0 6 % начальный номер    количество
-    000000012 0000 n  % смещение, номер поколения, тип
-    """
-    pass
 
-  def parse_trailer(self):
+  
+  def get_xrefpos(self):
     """
-    загружает из данных словарь параметров файла trailer
-    создает каталог Catalog (ключ /Root)
+    получает и возвращает позицию таблицы ссылок
     """
-    pass
+    lst = []
+    pos = 5
+    for i in range(pos):
+        lst = [self.read_string_reverse()] + lst
+    for i in range(len(lst)):
+        if lst[i] == 'startxref':
+            return int(lst[i + 1])
+
+          
+  def read_string_reverse(self):
+    """
+    читает строку задом наперед с текущей позиции в файле
+    возвращает прочитанную строку
+    """
+    data = b''
+    b = b''
+    while b != b'\n' and b != b'\r':
+        b = self.f.read(1)
+        data = b + data
+        self.f.seek(-2, 1)
+#    print(f.tell())
+    while b == b'\n' or b == b'\r':
+        b = self.f.read(1)
+        self.f.seek(-2, 1)
+  #  print(f.tell())
+    self.f.seek(1, 1)
+    return ''.join([chr(c) for c in data]).strip()
+
+
+  def read_string(self):
+    """
+    читает строку начиная с текущей позиции в файле
+    возвращает строку
+    """
+    data = b''
+    b = b''
+    while b != b'\n' and b != b'\r':
+        b = self.f.read(1)
+        data = data + b
+    while b == b'\n' or b == b'\r':
+        b = self.f.read(1)
+    self.f.seek(-1, 1)
+    return ''.join([chr(c) for c in data]).strip()
+
+
+  def read_stream(self):
+    """
+    читает и возвращает поток байт между stream и endstream
+    """
+    data = b''
+    b = b''
+    while data[-9:] != b'endstream':
+        b = self.f.read(1)
+        data = data + b
+    return data[:-9].strip()
