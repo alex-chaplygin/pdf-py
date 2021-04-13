@@ -1,5 +1,5 @@
 # coding=UTF-8
-from list import *
+from Tokens import *
 
 class Array(object):
 
@@ -23,7 +23,7 @@ class Array(object):
     Инициализирует массив
     string - строка массива преобразуется в список лексем используя класс Tokens
     """
-    pass
+    self.array = Tokens(string).get()
 
 
 
