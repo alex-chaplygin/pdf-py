@@ -24,13 +24,9 @@ class Dictionary(object):
     Пары ключ значение добавляются в data
     Ключи из NameObject преобразуются в string
     """
-    pass
-
-  def get(self, key):
-    """
-    Возвращает значение по ключу.
-    Ключ - строка. Значение - список объектов (токенов)
-    """
-    pass
+    tokens = Tokens(string).get()
+    self.data = dict()
+    for i in range(0, len(tokens), 2):
+      self.data[tokens[i]] = tokens[i + 1]
 
 
