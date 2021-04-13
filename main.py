@@ -20,18 +20,15 @@ class Main:
 
         
     def run(self):
-        file = filedialog.askopenfilenames()
-        self.pdf = PDF(file)
-        for elem in self.pdf.getPage(1):
-            self.canvas.create_line(elem)
-
+        self.open()
         self.window.mainloop()
 
 
     def open(self):
-        file = filedialog.askopenfilenames()
+        (file, ) = filedialog.askopenfilenames()
         self.pdf = PDF(file)
-        self.pdf.getPage(self.page)
+        for elem in self.pdf.get_page(1):
+            self.canvas.create_line(elem)
 
         
     def next(self):
