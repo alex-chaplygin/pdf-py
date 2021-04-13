@@ -1,5 +1,4 @@
 # coding=UTF-8
-from list import *
 
 class Tokens(object):
 
@@ -10,24 +9,39 @@ class Tokens(object):
   :author:
   """
 
-  def __init__(self, data):
+  def __init__(self, str_list):
     """
      Сохраняет строку в классе
 
-    @param list data : строка в классе
+    @param str_list : список строк
     """
-    self.data = data
+    self.data = ' '.join([self.delete_comment(s) for s in str_list])
+    print(self.data)
 
+
+  def delete_comment(self, s):
+    """
+    Удаляет комментарий, который начинается с % до конца строки
+    "123 % ----"
+    возвращает "123 "
+    """
+    if '%' in s:
+      return s[:s.index('%')]
+    else:
+      return s
+  
     
   def get(self):
     """
      Возвращает список токенов.
-    Удаляет комментарии, которые начинаются с % до конца строки
     num1 num2 R заменяет на кортеж ссылки (num1, num2)
 
     @return  :
     """
-    pass
+    l = []
+    while self.data != '':
+      l.append(self.get_token())
+    return l
 
   
   def get_token(self):
@@ -37,7 +51,7 @@ class Tokens(object):
     Анализирует первый символ.
     Цифра - число
     / - NameObject
-    Буква - ключевое слово (в виде строки) obj endobj stream endstream
+    Буква - ключевое слово obj endobj stream endstream
     true/false - логическое значение
     null - None
     ( - literal string
@@ -46,9 +60,29 @@ class Tokens(object):
     [ - массив
     @return  : token
     """
-    pass
+    self.skip_whitespace()
+    if self.data == '':
+      return None
+    elif self.data[0].isdigit():
+      return self.get_number()
+    elif self.data[0] == '(':
+      return self.get_literal_string()
+    elif self.data[0] == '/':
+      return self.get_name_object()
+    elif self.data[:4] == 'true' or self.data[:5] == 'false':
+      return self.get_boolean()
+    elif self.data[:4] == 'null':
+      return self.get_null()
+    elif self.data[0].isalpha():
+      return self.get_keyword()
+    elif self.data[0:2] == '<<':
+      return Dictionary(self.get_dictionary_string()).data
+    elif self.data[0] == '<':
+      return self.get_hex_string()
+    elif self.data[0] == '[':
+      return Array(self.get_array_string()).array
 
-  
+    
   def skip_whitespace(self):
     """
      Удаляет из строки разделители \x00 \x09 \x0a \x0c \x0d \x20 
@@ -111,13 +145,13 @@ class Tokens(object):
     c = 0
     for i in range(len(self.data)):
       if self.data[i] == '(':
-	c += 1
-	x = i + 1
+        c += 1
+        x = i + 1
       if self.data[i] == ')':
         c -= 1
-	y = i
+        y = i
       if c == 0:
-	return self.data[1:y]
+        return self.data[1:y]
 
       
   def get_hex_string(self):
@@ -128,10 +162,10 @@ class Tokens(object):
     @return  : байтовая строка
     """
     for i in range (len(self.data)):
-		if self.data[i] == '<':
-			z = i + 1  
-		if self.data[i] == '>':
-			q = i
+      if self.data[i] == '<':
+        z = i + 1  
+      if self.data[i] == '>':
+        q = i
     s = self.data[1:q] 
     ste = []
 	
@@ -184,3 +218,23 @@ class Tokens(object):
     @return  : значение None
     """
     pass  
+
+
+  def get_name_object(self):
+    """
+     Извлекает из data name object 
+    /Type
+    @return  : NameObject
+    """
+    pass  
+
+
+  def get_keyword(self):
+    """
+     Извлекает из data ключевое слово
+    obj endobj stream endstream
+    /Type
+    @return  : Keyword
+    """
+    pass  
+  
