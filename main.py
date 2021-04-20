@@ -6,7 +6,7 @@ from tkinter import filedialog
 class Main:
     def __init__(self):
         self.window = Tk()
-        self.window.title('Test1')
+        self.window.title('PDF просмотр')
         self.window.geometry('500x500')
         self.canvas = Canvas(width=500, height=500)
         self.canvas.grid(column=0, row=0)
