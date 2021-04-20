@@ -76,11 +76,16 @@ class Tokens(object):
     elif self.data[0].isalpha():
       return self.get_keyword()
     elif self.data[0:2] == '<<':
-      return Dictionary(self.get_dictionary_string()).data
+      tokens = Tokens(string).get()
+      data = dict()
+      for i in range(0, len(tokens), 2):
+        data[tokens[i]] = tokens[i + 1]
+      return data
     elif self.data[0] == '<':
       return self.get_hex_string()
     elif self.data[0] == '[':
-      return Array(self.get_array_string()).array
+      t = Tokens(self.get_array_string())
+      return t.get()
 
     
   def skip_whitespace(self):
