@@ -1,5 +1,9 @@
 # coding=UTF-8
 from Tokens import *
+from Keyword import *
+from NameObject import *
+from Object import *
+
 
 class PDF(object):
 
@@ -23,7 +27,7 @@ class PDF(object):
     xref = self.get_xrefpos()
     print('xrefpos', xref)
     self.f.seek(xref)
-    obj = self.read_object()
+    xref_obj = self.read_object()
 
 
   def read_object(self):
@@ -35,8 +39,17 @@ class PDF(object):
     while not 'stream' in s:
       s = self.read_string()
       ls.append(s)
-    t = Tokens(ls)
-    print(t.get())
+    #t = Tokens(ls)
+    t = [455, 0, Keyword('obj'), {
+      NameObject('Type') : NameObject('XRef'),
+      NameObject('Index') : [0, 456],
+      NameObject('Size') : 456,
+      NameObject('W') : [1, 3, 1],
+      }]
+    if t[2] != Keyword('obj'):
+      raise Exception('Not object')
+    return Object(t[0], t[1], t[3], self.read_stream())
+
     
   def get_page(self, page):
     """
