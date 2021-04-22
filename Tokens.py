@@ -105,7 +105,15 @@ class Tokens(object):
 
     @return  : int или float число
     """
-    pass
+    num = ''
+    for i in range(len(self.data) - 1):
+      if ((self.data[i] == '-' or self.data[i] == '+') and self.data[i + 1].isdigit()) or self.data[i].isdigit() or (self.data[i] == '.' or self.data[i + 1].isdigit()):
+        num = num + self.data[i]
+    self.data = self.data.replace(num, '')
+    try:
+      return int(num)
+    except:
+      return float(num)
 
   
   def get_boolean(self):
@@ -243,3 +251,8 @@ class Tokens(object):
     """
     pass  
   
+
+if __name__ == '__main__':
+  t = Tokens(['-231.2  ddd'])
+  n = t.get_number()
+  print(n, type(n), t.data)
