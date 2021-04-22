@@ -237,6 +237,10 @@ class Tokens(object):
     """
      Извлекает из data name object 
     /Type
+    /ASomewhatLongerName
+    /1 . 2
+    /lime#20Green
+    /paired#28#29parentheses
     @return  : NameObject
     """
     pass  
@@ -246,7 +250,6 @@ class Tokens(object):
     """
      Извлекает из data ключевое слово
     obj endobj stream endstream
-    /Type
     @return  : Keyword
     """
     pass  
