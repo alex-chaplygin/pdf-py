@@ -50,10 +50,18 @@ class PDF(object):
       raise Exception('Not object')
     return Object(t[0], t[1], t[3], self.read_stream())
 
+
+  def get_numpages(self):
+    """
+     Возвращает число страниц в документе
+    """
+    pass
+  
     
   def get_page(self, page):
     """
-     Возвращает список графических примитивов
+     Возвращает список графических примитивов для
+     отрисовки страницы
 
     @param page : номер страницы
     @return : список графических примитивов
