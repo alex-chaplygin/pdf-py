@@ -3,6 +3,7 @@ from Tokens import *
 from Keyword import *
 from NameObject import *
 from Object import *
+import XRef
 
 
 class PDF(object):
@@ -28,6 +29,11 @@ class PDF(object):
     print('xrefpos', xref)
     self.f.seek(xref)
     xref_obj = self.read_object()
+    XRef.init(xref_obj)
+    root = xref_obj.get('Root')
+    self.f.seek(XRef.get(9))
+    obj = self.read_object()
+    print(''.join([chr(x) for x in obj.stream]))
 
 
   def read_object(self):
@@ -40,11 +46,14 @@ class PDF(object):
       s = self.read_string()
       ls.append(s)
     #t = Tokens(ls)
+    print(ls)
     t = [455, 0, Keyword('obj'), {
       NameObject('Type') : NameObject('XRef'),
       NameObject('Index') : [0, 456],
       NameObject('Size') : 456,
       NameObject('W') : [1, 3, 1],
+      NameObject('Root') : (453, 0),
+      NameObject('Info') : (454, 0),
       }]
     if t[2] != Keyword('obj'):
       raise Exception('Not object')
@@ -66,7 +75,7 @@ class PDF(object):
     @param page : номер страницы
     @return : список графических примитивов
     """
-    lines = [(0, 0, 500, 500), (70, 100, 350, 200), (20, 460, 400, 10,), (150, 100, 400, 80)]
+    lines = [(70, 100, 'Test', 'Times', 20), (150, 100, 400, 80)]
     return lines
 
 
