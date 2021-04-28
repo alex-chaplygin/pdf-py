@@ -1,4 +1,5 @@
 # coding=UTF-8
+from NameObject import *
 
 class Tokens(object):
 
@@ -123,7 +124,14 @@ class Tokens(object):
 
     @return  : true или false
     """
-    pass
+    i = 'true'
+    a = 'false'
+    if i in self.data:
+      self.data = self.data.replace(i, '')
+      return True
+    if a in self.data:
+      self.data = self.data.replace(a, '')
+    return False
 
 
   def get_literal_string(self):
@@ -185,7 +193,9 @@ class Tokens(object):
     for i in range(0, len(s), 2):
       x = int(s[i:i+2], 16)
       ste.append(x)
-    return bytes(ste)
+    st = self.data
+    self.data = self.data[q+1:]
+    return st[1:q]
 
   
   def get_array_string(self):
@@ -230,7 +240,8 @@ class Tokens(object):
      Извлекает из data null
     @return  : значение None
     """
-    pass  
+    self.data = self.data[4:]
+    return None
 
 
   def get_name_object(self):
@@ -243,7 +254,24 @@ class Tokens(object):
     /paired#28#29parentheses
     @return  : NameObject
     """
-    pass  
+    name = ''
+    n = 0
+    if self.data[0] == '/':
+      self.data = self.data.replace(self.data[0], '')
+    for i in range(len(self.data)):
+      if self.data[i] == '#':
+        a = ''
+        b = ''
+        dec = ''
+        a = self.data[i+1] + self.data[i+2]
+        dec = int(a, base=16)
+        b = chr(dec)
+        name = name + b
+        self.data = self.data.replace('#'+a, b)
+        self.data = self.data + '  '
+        n = n + 1
+    self.data = self.data[:-2*n]
+    return NameObject(name)
 
 
   def get_keyword(self):
@@ -256,6 +284,18 @@ class Tokens(object):
   
 
 if __name__ == '__main__':
-  t = Tokens(['-231.2  ddd'])
+  t = Tokens(['/Type /Xref /Val 12 23'])
+  n = t.get_name_object()
+  print(n, t.data, '|', sep='|')
+  assert n == NameObject('Type')
+  assert t.data == ' /Xref /Val 12 23'
+  t = Tokens(['1 1 1'])
   n = t.get_number()
-  print(n, type(n), t.data)
+  print(n, t.data, '|', sep='|')
+  t = Tokens(['true 32 true'])
+  n = t.get_boolean()
+  print(n, t.data, '|', sep='|')
+  x = Tokens('<901FA3>ffbbcc')
+  n = x.get_hex_string()
+  assert n == HexString(b'\x90\x1f\xa3')
+  assert x.data == 'ffbbcc'
