@@ -1,24 +1,52 @@
 from NameObject import *
+"""
+Таблица ссылок на объекты PDF
+size - размер таблицы
+index - диапазон номеров (начальный_номер объекта, количество)
+w - размеры полей в записи в байтах
+table - таблица ссылок
+"""
+size = 0
+index = (0, 0)
+w = None
+table = []
 
-
-class XRef:
+def init(obj):
     """
-    Таблица ссылок на объекты PDF
-    size - размер таблицы
-    index - диапазон номеров (начальный_номер объекта, количество)
-    w - размеры полей в записи в байтах
+    obj - объект таблицы ссылок
     """
-    def __init__(self, obj):
-        """
-        obj - объект таблицы ссылок
-        """
-        if obj.get('Type') != NameObject('XRef'):
-            raise Exception('Not XRef')
-        self.size = obj.get('Size')
-        if obj.data.has_key(NameObject('Index')):
-            i = obj.get('Index')
-            self.index = (i[0], i[1])
+    global table
+    global index
+    if obj.get('Type') != NameObject('XRef'):
+        raise Exception('Not XRef')
+    size = obj.get('Size')
+    if NameObject('Index') in obj.data:
+        i = obj.get('Index')
+        index = (i[0], i[1])
+    else:
+        index = (0, size)
+    w = obj.get('W')
+    table.clear()
+    for i in range(0, len(obj.stream), sum(w)):
+        t = obj.stream[i]
+        if t == 0:
+            table.append((0, -1))
         else:
-            self.index = (0, self.size)
-        w = obj.get('W')
-        self.w = (w[0], w[1], w[2])
+            offset = 0
+            for j in range(w[1]):
+                offset = offset << 8
+                offset += obj.stream[i + 1 + j]
+            table.append((t, offset))
+
+
+def get(i):
+    """
+    получить смещение объекта
+    i - номер объекта
+    возвращает позицию в файле
+    """
+    (t, offset) = table[i]
+    if t == 2:
+        return get(offset)
+    else:
+        return offset
