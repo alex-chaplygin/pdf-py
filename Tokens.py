@@ -98,23 +98,35 @@ class Tokens(object):
 
   
   def get_number(self):
-    """
-     Извлекает число из строки.
-    Примеры чисел: 123 43445 +17 -98 0
-    Вещественные: 34.5 -3.62 +123.4 4. -0.002 0.0
-    Число из строки удаляется
+        """
+        Извлекает число из строки.
+        Примеры чисел: 123 43445 +17 -98 0
+        Вещественные: 34.5 -3.62 +123.4 4. -0.002 0.0
+        Число из строки удаляется
 
-    @return  : int или float число
-    """
-    num = ''
-    for i in range(len(self.data) - 1):
-      if ((self.data[i] == '-' or self.data[i] == '+') and self.data[i + 1].isdigit()) or self.data[i].isdigit() or (self.data[i] == '.' or self.data[i + 1].isdigit()):
-        num = num + self.data[i]
-    self.data = self.data.replace(num, '')
-    try:
-      return int(num)
-    except:
-      return float(num)
+        @return  : int или float число
+        """
+        byk = ''
+        num = ''
+        i_last = 0
+        for p in range(len(self.data)):
+            if (self.data[p].isdigit()):
+                i_last = p
+
+        for i in range(len(self.data)):
+            if not(self.data[i].isdigit()) and not(self.data[i] == '-' or self.data[i] == '+' or (self.data[i] == '.' and i < i_last)):
+                byk = byk + self.data[i]
+
+        for b in range(len(self.data)):
+            if (self.data[b].isdigit()) or (self.data[b] == '-' or self.data[b] == '+' or (self.data[b] == '.' and b < i_last )):
+                num = num + self.data[b]
+
+        self.data = byk
+
+        try:
+            return int(num)
+        except:
+            return float(num)
 
   
   def get_boolean(self):
@@ -195,7 +207,7 @@ class Tokens(object):
       ste.append(x)
     st = self.data
     self.data = self.data[q+1:]
-    return st[1:q]
+    return bytes(ste)
 
   
   def get_array_string(self):
@@ -284,18 +296,19 @@ class Tokens(object):
   
 
 if __name__ == '__main__':
-  t = Tokens(['/Type /Xref /Val 12 23'])
-  n = t.get_name_object()
-  print(n, t.data, '|', sep='|')
-  assert n == NameObject('Type')
-  assert t.data == ' /Xref /Val 12 23'
+#  t = Tokens(['/Type /Xref /Val 12 23'])
+ # n = t.get_name_object()
+#  print(n, t.data, '|', sep='|')
+ # assert n == NameObject('Type')
+ # assert t.data == ' /Xref /Val 12 23'
   t = Tokens(['1 1 1'])
   n = t.get_number()
   print(n, t.data, '|', sep='|')
   t = Tokens(['true 32 true'])
   n = t.get_boolean()
   print(n, t.data, '|', sep='|')
-  x = Tokens('<901FA3>ffbbcc')
+  x = Tokens(['<901FA3>ffbbcc<11>'])
   n = x.get_hex_string()
-  assert n == HexString(b'\x90\x1f\xa3')
-  assert x.data == 'ffbbcc'
+  print(n, t.data, '|', sep='|')
+  assert n == b'\x90\x1f\xa3'
+  assert x.data == 'ffbbcc<11>'
