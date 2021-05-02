@@ -304,6 +304,7 @@ if __name__ == '__main__':
   t = Tokens(['1 1 1'])
   n = t.get_number()
   print(n, t.data, '|', sep='|')
+  assert n == 1 and t.data == ' 1 1'
   t = Tokens(['true 32 true'])
   n = t.get_boolean()
   print(n, t.data, '|', sep='|')
