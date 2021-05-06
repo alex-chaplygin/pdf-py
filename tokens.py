@@ -83,7 +83,22 @@ def get_number():
 
     @return  : ('num', число)
     """
-    pass
+    global cur_char
+    num = ''
+    zn = ''
+    if cur_char == '+' or cur_char == '-':
+        zn = cur_char
+        cur_char = get_char()
+    while cur_char not in separators:
+        if cur_char != -1 and (cur_char.isdigit() or cur_char == '.'):
+            num += cur_char
+            cur_char = get_char()
+        else:
+            break
+    try: num = int(zn + num)
+    except: num = float(zn + num)
+
+    return ('num', num)
 
 
 def get_id():
@@ -182,3 +197,10 @@ if __name__ == '__main__':
     test('\x0cstream', ('id', 'stream'))
     test('\x00\x09\x0a\x0c\x0d\x20stream', ('id', 'stream'))
     test('        \n\t\t     stream', ('id', 'stream'))
+
+    test('34.12', ('num', 34.12))
+    test('+34.12', ('num', 34.12))
+    test('-34.12', ('num', -34.12))
+    test('3412', ('num', 3412))
+    test('+3412', ('num', 3412))
+    test('-3412', ('num', -3412))
