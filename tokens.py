@@ -93,6 +93,8 @@ def get_id():
     global cur_char
     iden = ''
     while cur_char not in separators:
+        if cur_char == -1:
+            break
         iden += cur_char
         cur_char = get_char()
     return ('id', iden)
@@ -170,5 +172,6 @@ if __name__ == '__main__':
             print(' Неудача')
 
         
-    test('stream ', ('id', 'stream'))
+    test('stream', ('id', 'stream'))
+    test('', ('end'))
     test('12 ', ('num', 12))
