@@ -61,7 +61,10 @@ def skip_whitespace():
     Пропуск комментария
 
     """
-    pass  
+    global cur_char
+
+    while cur_char in separators:
+        cur_char=get_char()
 
 
 def skip_comment():
@@ -175,3 +178,7 @@ if __name__ == '__main__':
     test('stream', ('id', 'stream'))
     test('', ('end'))
     test('12 ', ('num', 12))
+    
+    test('\x0cstream', ('id', 'stream'))
+    test('\x00\x09\x0a\x0c\x0d\x20stream', ('id', 'stream'))
+    test('        \n\t\t     stream', ('id', 'stream'))
