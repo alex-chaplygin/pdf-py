@@ -31,7 +31,7 @@ def get_token():
     if cur_char == -1:
         return ('end')
     skip_whitespace()
-    if cur_char.isdigit():
+    if cur_char.isdigit() or cur_char == '+' or cur_char == '-':
         return get_number()
     elif cur_char.isalpha():
         return get_id()
