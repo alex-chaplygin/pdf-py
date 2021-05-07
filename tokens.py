@@ -89,12 +89,9 @@ def get_number():
     if cur_char == '+' or cur_char == '-':
         zn = cur_char
         cur_char = get_char()
-    while cur_char not in separators:
-        if cur_char != -1 and (cur_char.isdigit() or cur_char == '.'):
+    while cur_char != -1 and (cur_char.isdigit() or cur_char == '.'):
             num += cur_char
             cur_char = get_char()
-        else:
-            break
     try: num = int(zn + num)
     except: num = float(zn + num)
 
@@ -193,11 +190,11 @@ if __name__ == '__main__':
     test('stream', ('id', 'stream'))
     test('', ('end'))
     test('12 ', ('num', 12))
-    
+    print()
     test('\x0cstream', ('id', 'stream'))
     test('\x00\x09\x0a\x0c\x0d\x20stream', ('id', 'stream'))
     test('        \n\t\t     stream', ('id', 'stream'))
-
+    print()
     test('34.12', ('num', 34.12))
     test('+34.12', ('num', 34.12))
     test('-34.12', ('num', -34.12))
