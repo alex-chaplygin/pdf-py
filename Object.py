@@ -1,5 +1,4 @@
 import zlib
-from NameObject import *
 
 
 class Object:
@@ -16,11 +15,29 @@ class Object:
         self.num1 = num1
         self.num2= num2
         self.data = data
-        self.stream = zlib.decompress(stream)
+        if stream != b'':
+            self.stream = zlib.decompress(stream)
+        else:
+            self.stream = None
 
 
     def get(self, key):
         if type(self.data) is dict:
-            return self.data[NameObject(key)]
+            return self.data[key]
         else:
             raise Exception('Данные объекта - не словарь')
+
+
+    def __eq__(self, other):
+        """
+        метод сравнения объектов
+        """
+        return self.data == other.data and self.num1 == other.num1  and self.num2 == other.num2 and self.stream == other.stream
+
+    
+    def __repr__(self):
+        """
+        представление объекта в виде строки
+        """
+        return '(Object ' + str(self.num1) + ' ' + str(self.num2) + ' ' + str(self.data) + ')'
+    
