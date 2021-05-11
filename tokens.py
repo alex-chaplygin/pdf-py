@@ -110,6 +110,9 @@ def get_id():
     while cur_char not in separators:
         if cur_char == -1:
             break
+        elif cur_char == '#':
+            c1, c2 = get_char(), get_char()
+            cur_char = chr(int(c1 + c2, 16))
         iden += cur_char
         cur_char = get_char()
     return ('id', iden)
@@ -143,7 +146,20 @@ def get_literal_string():
 
     @return  : ('str', строка)
     """
-    pass
+    global cur_char
+    stroka = ''
+    s = 1
+    cur_char = get_char()
+    while cur_char != -1:
+        if cur_char == '(':
+            s += 1
+        elif cur_char == ')':
+            s -= 1
+        if s == 0:
+            break
+        stroka += cur_char
+        cur_char = get_char()
+    return ('str', stroka)
 
 
 def get_hex_string(first):
@@ -154,50 +170,15 @@ def get_hex_string(first):
     Примеры: 901FA3> Возвращает b'\x90\x1f\xa3'
     @return  : ('hex', байтовая строка)
     """
-    pass
-
-
-if __name__ == '__main__':
-    data = 'stream '
-    index = 0
-
-
-    def next_char():
-        global index
-        index += 1
-        if index > len(data):
-            return -1
-        else:
-            return data[index - 1]
-
-    get_char = next_char
-        
-    def test(in_str, res):
-        global cur_char
-        global data
-        global index
-        data = in_str
-        index = 0
+    global cur_char
+    bs = first
+    cur_char = get_char()
+    b = []
+    while cur_char != '>' and cur_char != -1:
+        bs += cur_char
         cur_char = get_char()
-        token = get_token()
-        print('Вход:', in_str, 'Ожидается:', res, 'Результат:', token, end='')
-        if token == res:
-            print(' Успех')
-        else:
-            print(' Неудача')
-
-        
-    test('stream', ('id', 'stream'))
-    test('', ('end'))
-    test('12 ', ('num', 12))
-    print()
-    test('\x0cstream', ('id', 'stream'))
-    test('\x00\x09\x0a\x0c\x0d\x20stream', ('id', 'stream'))
-    test('        \n\t\t     stream', ('id', 'stream'))
-    print()
-    test('34.12', ('num', 34.12))
-    test('+34.12', ('num', 34.12))
-    test('-34.12', ('num', -34.12))
-    test('3412', ('num', 3412))
-    test('+3412', ('num', 3412))
-    test('-3412', ('num', -3412))
+    for i in range(0, len(bs), 2):
+        x = int(bs[i:i + 2], 16)
+        b.append(x)
+    cur_char = get_char()
+    return ('hex', bytes(b))
