@@ -73,6 +73,7 @@ def parse_array():
     '''
     pass
 
+
 def parse_dict():
     '''
     распознавание словаря
@@ -96,48 +97,18 @@ def parse_dict():
 
 def parse_stream(data_dict):
     '''
+    stream
+    0x00 0x01 ...
+    endstream
     распознает поток байт (если есть)
+    если текущий токен не stream, то выход
     data_dict - словарь из него извлекается по ключу 'Length' длина потока в байтах
     если значение текущего токена = stream
        пропускаются разделители (tok.skip_whitespace)
-       читается заданное число байт, накапливается в строке байт
+       читается заданное число байт (get_byte - чтение байт), 
+       накапливается в строке байт
        в конеце нужно проверить наличие endstream
        возвращается строка байт
     иначе возвращает None
     '''
     pass
-
-
-if __name__ == '__main__':
-    data = []
-    index = 0
-
-
-    def next_tok():
-        global index
-        index += 1
-        if index > len(data):
-            return -1
-        else:
-            return data[index - 1]
-
-    get_token = next_tok
-        
-    def test(in_str, res, func=parse_data):
-        global cur_char
-        global data
-        global index
-        data = in_str
-        index = 0
-        cur_token = get_token()
-        parse = func()
-        print('Вход:', in_str, 'Ожидается:', res, 'Результат:', parse, end='')
-        if parse == res:
-            print(' Успех')
-        else:
-            print(' Неудача')
-
-        
-    test([('id', 'null')], None)
-    test([('id', 'true')], True)
-    test([('id', 'false')], False)
