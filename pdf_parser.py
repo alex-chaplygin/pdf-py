@@ -2,6 +2,7 @@
 Синтаксический анализатор
 '''
 import tokens as tok
+from Object import *
 
 # текущая лексема
 cur_token = None
@@ -22,7 +23,7 @@ def parse_object():
     endobj
     '''
     global cur_token
-    (t, num1) = get_token()
+    (t, num1) = cur_token
     if t != 'num':
         raise Exception('Ожидается число')
     (t, num2) = get_token()
@@ -36,10 +37,10 @@ def parse_object():
     cur_token = get_token()
     data = parse_data()
     stream = parse_stream(data)
-    (t, k) = cur_token
-    if t != 'id':
+    tok = cur_token
+    if tok[0] != 'id':
         raise Exception('Ожидается endobj')
-    if k != 'endobj':
+    if tok[1] != 'endobj':
         raise Exception('Ожидается endobj')
     return Object(num1, num2, data, stream)
 
@@ -59,7 +60,12 @@ def parse_data():
     иначе возвращает значение из токена
     в каждом случае перед возвратом значения - присвоить новое значение текущему токену
     '''
-    pass
+    global cur_token
+    k = None
+    if len(cur_token) == 2:
+        (t, k) = cur_token
+    cur_token = get_token()
+    return k
 
 
 def parse_array():
@@ -111,4 +117,4 @@ def parse_stream(data_dict):
        возвращается строка байт
     иначе возвращает None
     '''
-    pass
+    return b''
