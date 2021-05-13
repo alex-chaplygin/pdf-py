@@ -159,6 +159,7 @@ def get_literal_string():
             break
         stroka += cur_char
         cur_char = get_char()
+    cur_char = get_char()
     return ('str', stroka)
 
 
