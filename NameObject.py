@@ -36,7 +36,10 @@ class NameObject(object):
     """
     метод сравнения объектов
     """
-    return self.data == other.data
+    if type(other) is NameObject:
+      return self.data == other.data
+    else:
+      return False
 
 
   def __hash__(self):
