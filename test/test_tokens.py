@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
         
     test('stream', ('id', 'stream'))
+    test('null', ('id', 'null'))
     test('', ('end'))
     test('12 ', ('num', 12))
     test('lime#20Green', ('id', 'lime Green'))
@@ -67,9 +68,9 @@ if __name__ == '__main__':
     test('<AA>', ('hex', b'\xaa'))
     test('<9ABFA366DF>', ('hex', b'\x9a\xbf\xa3\x66\xdf'))
     print()
-    test('/Type /Obj', ('/'))
-    test('[1 2 3 4 5]', ('['))
-    test('] >>', (']'))
-    test('<< /Type /Ref >>', ('<<'))
-    test('>> stream', ('>>'))
+    test('/Type /Obj', ('/',))
+    test('[1 2 3 4 5]', ('[',))
+    test('] >>', (']',))
+    test('<< /Type /Ref >>', ('<<',))
+    test('>> stream', ('>>',))
     
