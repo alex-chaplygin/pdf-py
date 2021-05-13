@@ -14,7 +14,8 @@ separators = ['\x00', '\x09', '\x0a',  '\x0c',  '\x0d',  '\x20']
 
 def get_token():
     """
-     Возвращает токен
+    Возвращает очередной токен.
+
     Удаляет разделители.
     Анализирует первый символ.
     Цифра - число ('num', 14)
@@ -25,7 +26,8 @@ def get_token():
     << >>  ('<<') ('>>')
     [ ]  ('[') (']')
     конец потока ('end')
-    @return  : token
+    Возвращает  : token
+
     """
     global cur_char
     if cur_char == -1:
@@ -55,10 +57,12 @@ def get_token():
         return (c)
 
 
-def skip_whitespace():
+def skip_whitespace():    
     """
-     Пропускает разделители \x00 \x09 \x0a \x0c \x0d \x20 
-    Пропуск комментария
+    Пропускает разделители и комментарии
+
+    Разделители \x00 \x09 \x0a \x0c \x0d \x20 
+    Комментарий: вызов skip_comment
 
     """
     global cur_char
@@ -69,8 +73,11 @@ def skip_whitespace():
 
 def skip_comment():
     """
+    Пропуск комментария
+
     Пропустить комментарий, который начинается с % до конца строки
     "123 % ----"
+
     """
     pass
 
@@ -78,10 +85,11 @@ def skip_comment():
 def get_number():
     """
     Извлекает число
+
     Примеры чисел: 123 43445 +17 -98 0
     Вещественные: 34.5 -3.62 +123.4 4. -0.002 0.0
+    Возвращает  : ('num', число)
 
-    @return  : ('num', число)
     """
     global cur_char
     num = ''
@@ -101,9 +109,12 @@ def get_number():
 def get_id():
     """
     Извлекает идентификатор
+
     obj null
     Type
     lime#20Green
+    Возвращает: ('id', строка_идентификатора)
+
     """
     global cur_char
     iden = ''
@@ -120,7 +131,8 @@ def get_id():
 
 def get_literal_string():
     """
-     Извлекает строку в скобках из строки.
+    Извлекает строку в скобках из строки.
+
     Примеры:
     (111 22 33 44)
     Strings may contain newlines
@@ -144,7 +156,7 @@ def get_literal_string():
     ( \53 )
     denote strings containing the single character \053, a plus sign (+).
 
-    @return  : ('str', строка)
+    Возвращает  : ('str', строка)
     """
     global cur_char
     stroka = ''
@@ -165,11 +177,13 @@ def get_literal_string():
 
 def get_hex_string(first):
     """
+    Распознает hex строку.
+
     first - первый символ
-     Извлекает строку в скобках из строки.
     значение из строки data удаляется
     Примеры: 901FA3> Возвращает b'\x90\x1f\xa3'
-    @return  : ('hex', байтовая строка)
+    Возвращает  : ('hex', байтовая строка)
+
     """
     global cur_char
     bs = first
