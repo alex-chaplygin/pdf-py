@@ -3,8 +3,8 @@
 '''
 import sys
 sys.path.append('..')
-import pdf_parser as parser
 import tokens
+import pdf_parser as parser
 from NameObject import *
 from Object import *
 
@@ -21,21 +21,21 @@ if __name__ == '__main__':
         else:
             return data[index - 1]
 
-    tokens.get_char = next_char
-       
+        
     def test(in_str, res, func=parser.parse_data):
-        global cur_char
         global data
         global index
         data = in_str
         index = 0
+        tokens.get_char = next_char
+        tokens.cur_char = tokens.get_char()
         parser.cur_token = tokens.get_token()
         parse = func()
         print('Вход:', in_str, 'Ожидается:', res, 'Результат:', parse, end='')
         if parse == res:
             print(' Успех')
         else:
-            print(' Неудача')
+            print('\n!!!!Неудача')
 
 
     test('null', None)
@@ -57,9 +57,9 @@ if __name__ == '__main__':
     print()
     test('''
     12 0 obj 
-          False
+          0.0
     endobj    
-    ''', Object(12, 0, False), parser.parse_object)
+    ''', Object(12, 0, 0.0), parser.parse_object)
     test('''
     13 0 obj 
           <<
