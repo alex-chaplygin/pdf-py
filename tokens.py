@@ -44,17 +44,19 @@ def get_token():
         if c != '<':
             return get_hex_string(c)
         else:
-            return ('<<')
+            cur_char = get_char()
+            return ('<<',)
     elif cur_char == '>':
         c = get_char()
         if c == '>':
-            return ('>>')
+            cur_char = get_char()
+            return ('>>',)
         else:
             raise Exception('Неожиданное >')
     else:
         c = cur_char
         cur_char = get_char()
-        return (c)
+        return (c,)
 
 
 def skip_whitespace():    
