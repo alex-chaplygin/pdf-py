@@ -1,3 +1,6 @@
+'''
+Тестирование синтаксического анализатора
+'''
 import sys
 sys.path.append('..')
 import pdf_parser as parser

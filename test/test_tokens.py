@@ -1,3 +1,6 @@
+'''
+Тестирование лексического анализатора
+'''
 import sys
 sys.path.append('..')
 import tokens
