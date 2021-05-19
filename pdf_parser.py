@@ -3,6 +3,7 @@
 '''
 import tokens as tok
 from Object import *
+from NameObject import *
 
 
 # текущая лексема
@@ -12,7 +13,7 @@ cur_token = None
 get_token = tok.get_token
 
 # функция для следующего байта
-get_byte = None
+get_bytes = None
 
 
 def parse_object():
@@ -66,8 +67,25 @@ def parse_data():
     k = None
     if len(cur_token) == 2:
         (t, k) = cur_token
+    else:
+        (t,) = cur_token
     cur_token = get_token()
-    return k
+    if t == 'id' and k == 'true':
+        return True
+    elif t == 'id' and k == 'false':
+        return False
+    elif t == 'id' and k == 'null':
+        return None
+    elif t == '/':
+        name = NameObject(cur_token[1])
+        cur_token = get_token()
+        return name
+    elif t == '[':
+        return parse_array()
+    elif t == '<<':
+        return parse_dict()
+    else:
+        return k
 
 
 def parse_array():
@@ -79,7 +97,12 @@ def parse_array():
     накапливает элемент в списке
     возвращает список
     '''
-    pass
+    global cur_token
+    arr = []
+    while cur_token != (']',):
+        arr.append(parse_data())
+    cur_token = get_token()
+    return arr
 
 
 def parse_dict():
@@ -100,7 +123,18 @@ def parse_dict():
     ключ записывается как строка (data из NameObject)
     возвращает словарь
     '''
-    pass
+    global cur_token
+    dic = {}
+    while cur_token != ('>>',):
+        key = parse_data()
+        val = parse_data()
+        if cur_token[0] == 'num':
+            val = (val, cur_token[1])
+            cur_token = get_token() # R
+            cur_token = get_token()
+        dic[key.data] = val
+    cur_token = get_token()
+    return dic
 
 
 def parse_stream(data_dict):
@@ -117,6 +151,15 @@ def parse_stream(data_dict):
        накапливается в строке байт
        в конеце нужно проверить наличие endstream
        возвращается строка байт
-    иначе возвращает None
+    иначе возвращает b''
     '''
-    return b''
+    global cur_token
+    if cur_token != ('id', 'stream'):
+        return b''
+    length = data_dict['Length']
+    s = get_bytes(length) # 0xa already read
+    cur_token = get_token()
+    if cur_token != ('id', 'endstream') and cur_token != ('id', 'xendstream'):
+        raise Exception('No endstream')
+    cur_token = get_token()
+    return s
