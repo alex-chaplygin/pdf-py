@@ -18,20 +18,25 @@ objects = {}
 xref_table = []
 # ссылка на корневой объект - начало документа (ссылка (1, 0))
 root_ref = None
+# словарь трейлера
+trailer = {}
 
 
 def get_char():
     '''
     Читает и возвращает один символ из файла из текущей позиции
     '''
-    return chr(get_byte()[0])
+    return chr(get_bytes(1)[0])
 
 
-def get_byte():
+def get_bytes(num):
     '''
-    Читает и возвращает один байт из файла из текущей позиции
+    Читает и возвращает байты из файла из текущей позиции
+
+    num - число байт
+    возвращает: байтовая строка 
     '''
-    return pdf_file.read(1)
+    return pdf_file.read(num)
 
 
 def load(file_name):
@@ -47,20 +52,19 @@ def load(file_name):
     global version
     if pdf_file != None:
         close(pdf_file)
+    tokens.get_char = get_char
+    parser.get_bytes = get_bytes
     pdf_file = open(file_name, 'rb')
     version = load_header()
-    xref_pos = load_trailer()
+    xref_pos = load_xrefpos()
     pdf_file.seek(xref_pos)
     load_xref_table()
+    load_trailer()
 
 
-def load_xref_table():
+def load_xref_stream():
     '''
-    Загружает таблицу ссылок
-
-    xref - первый вариант таблицы
-    0 6
-    ...
+    Загружает таблицу ссылок из потока (второй вариант)
 
     12 0 obj
     << /Type /XRef
@@ -75,13 +79,10 @@ def load_xref_table():
     endobj
     '''
     global xref_table
-    global root_object
-    tokens.get_char = get_char
-    tokens.cur_char = tokens.get_char()
-    parser.cur_token = tokens.get_token()
-    if parser.cur_token == ('id', 'xref'):
-        raise Exception('Первый вариант таблицы ссылок')
+    global root_ref
+    global objects
     obj = parser.parse_object()
+    objects[(obj.num1, obj.num2)] = obj
     if obj.get('Type') != NameObject('XRef'):
         raise Exception('Not XRef')
     size = obj.get('Size')
@@ -104,6 +105,28 @@ def load_xref_table():
                 pos += 1
             entry[j] = offset
         xref_table.append(tuple(entry))
+
+
+def load_xref_table():
+    '''
+    Загружает таблицу ссылок
+
+    xref - первый вариант таблицы
+    0 6 - первый и последний номера объектов
+    offset generation n - занятый объект
+    offset generation f - свободный объект
+    ...
+    '''
+    global xref_table
+    global root_ref
+    global objects
+    tokens.cur_char = tokens.get_char()
+    parser.cur_token = tokens.get_token()
+    if parser.cur_token != ('id', 'xref'):
+        load_xref_stream()
+    else:
+        pass
+        #raise Exception('Первый вариант таблицы ссылок')
     
 
 def load_header():
@@ -116,14 +139,10 @@ def load_header():
     pass
 
 
-def load_trailer():
+def load_xrefpos():
     '''
-    Загружает трейлер
+    Загружает позицию таблицы ссылок
 
-    trailer
-    <<
-    ...
-    >>
     startxref
     ссылка на таблицу ссылок
     %%EOF
@@ -131,12 +150,35 @@ def load_trailer():
     '''
     pdf_file.seek(-1, 2)
     lst = []
-    pos = 5
-    for i in range(pos):
-        lst = [read_string_reverse()] + lst
+    s = ''
+    while s != 'startxref':
+        s = read_string_reverse()
+        lst = [s] + lst
     for i in range(len(lst)):
         if lst[i] == 'startxref':
             return int(lst[i + 1])
+
+
+def load_trailer():
+    '''
+    Загружает трейлер
+
+    trailer
+    <<
+    /Root 1 0 R
+    ...
+    >>
+    '''
+    global trailer
+    global root_ref
+    if root_ref != None:
+        return # no trailer
+    tokens.cur_char = tokens.get_char()
+    parser.cur_token = tokens.get_token()
+    while parser.cur_token != ('<<',):
+        parser.cur_token = tokens.get_token()
+    trailer = parser.parse_data()
+    root_ref = trailer['Root']
 
         
 def read_string_reverse():
@@ -200,8 +242,10 @@ def get_content_stream_object(obj_num, index):
 
 
 if __name__ == '__main__':
-    load('test.pdf')
+    from sys import argv
+    load(argv[1])
     print('Version:', version)
     print('objects:', objects)
+    print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
