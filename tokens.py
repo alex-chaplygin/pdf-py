@@ -31,7 +31,7 @@ def get_token():
     """
     global cur_char
     if cur_char == -1:
-        return ('end')
+        return ('end',)
     skip_whitespace()
     if cur_char.isdigit() or cur_char == '+' or cur_char == '-':
         return get_number()

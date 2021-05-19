@@ -37,7 +37,7 @@ if __name__ == '__main__':
         
     test('stream', ('id', 'stream'))
     test('null', ('id', 'null'))
-    test('', ('end'))
+    test('', ('end',))
     test('12 ', ('num', 12))
     test('lime#20Green', ('id', 'lime Green'))
     test('lime#adGreen', ('id', 'lime\xadGreen'))
