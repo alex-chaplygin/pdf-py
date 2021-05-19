@@ -71,10 +71,3 @@ if __name__ == '__main__':
         'Type': NameObject('Ref'),
         'Length': 1000
     }), parser.parse_object)
-    test('''
-1 0 obj 
-          <</Length: 3>>
-stream
-\x00\x00\x00
-endstream
-endobj''', Object(1, 0, {'Length':3}, ), parser.parse_object)

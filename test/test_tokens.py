@@ -73,4 +73,7 @@ if __name__ == '__main__':
     test('] >>', (']',))
     test('<< /Type /Ref >>', ('<<',))
     test('>> stream', ('>>',))
+    test('1 0 R>>', ('num', 1))
+    test('0 R>>', ('num', 0))
+    test('R>>', ('id', 'R'))
     
