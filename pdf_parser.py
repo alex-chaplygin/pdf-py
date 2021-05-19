@@ -4,6 +4,7 @@
 import tokens as tok
 from Object import *
 
+
 # текущая лексема
 cur_token = None
 
@@ -12,6 +13,7 @@ get_token = tok.get_token
 
 # функция для следующего байта
 get_byte = None
+
 
 def parse_object():
     '''
