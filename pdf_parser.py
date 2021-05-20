@@ -79,7 +79,12 @@ def parse_array():
     накапливает элемент в списке
     возвращает список
     '''
-    pass
+    global cur_token
+    arr = []
+    while cur_token != (']',):
+        arr.append(parse_data())
+    cur_token = get_token()
+    return arr
 
 
 def parse_dict():
