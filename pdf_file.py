@@ -20,6 +20,7 @@ FREE = 0
 NORMAL = 1
 COMPRESSED = 2
 # таблица ссылок, содержит записи ()
+#   ключ: номер объекта
 #    Элемент таблицы: (тип, значение1, значение2)
 #   тип = FREE - свободный
 #              NORMAL - обычный объект
@@ -28,7 +29,7 @@ COMPRESSED = 2
 #    если тип NORMAL, то значение1 - смещение в файла
 #    если тип COMPRESSED, то значение1 - номер объекта с сжатыми объектами
 #                            значение2 - индекс
-xref_table = []
+xref_table = {}
 # ссылка на корневой объект - начало документа (ссылка (1, 0))
 root_ref = None
 # словарь трейлера
@@ -107,7 +108,7 @@ def load_xref_stream():
     w = obj.get('W')
     xref_table.clear()
     pos = 0
-    for i in range(0, len(obj.stream), sum(w)):
+    for i in range(index[1]):
         entry = [0, 0, 0] # 0 12 12 10
         for j in range(3):
             offset = 0
@@ -116,7 +117,7 @@ def load_xref_stream():
                 offset += obj.stream[pos]
                 pos += 1
             entry[j] = offset
-        xref_table.append(tuple(entry))
+        xref_table[index[0] + i] = tuple(entry)
 
 
 def load_xref_table():
@@ -124,7 +125,7 @@ def load_xref_table():
     Загружает таблицу ссылок
 
     xref - первый вариант таблицы
-    0 6 - первый и последний номера объектов
+    0 6 - первый номер объекта и количество объектов
     offset generation n - занятый объект
     offset generation f - свободный объект
     ...
