@@ -6,6 +6,10 @@ import pdf_parser as parser
 from NameObject import *
 from Object import *
 
+NORMAL = 1
+FREE = 0
+COMPRESSED = 2
+
 
 # Файловый объект PDF файла
 pdf_file = None
@@ -218,7 +222,7 @@ def read_string_reverse():
     pdf_file.seek(1, 1)
     return ''.join([chr(c) for c in data]).strip()
 
-        
+
 
 def get_object(ref):
     '''
@@ -233,6 +237,26 @@ def get_object(ref):
     Возвращает объект Object
     '''
     global objects
+
+    if objects.get(ref):
+        obj = objects[ref]
+    else:
+        r = xref_table[ref[0]]
+        print(r)
+        if r[0] == NORMAL:
+            pdf_file.seek(r[1])
+            tokens.cur_char = tokens.get_char()
+            parser.cur_token = tokens.get_token()
+            obj = parser.parse_object()
+            objects[ref] = obj
+        elif r[0] == FREE:
+            raise Exception('Ошибка!')
+        elif r[0] == COMPRESSED:
+            obj = get_object_stream_object()
+    return obj
+
+
+def get_object_stream_object():
     pass
 
 
@@ -266,3 +290,6 @@ if __name__ == '__main__':
     print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
+    for i in range(1, 456):
+        o = get_object((i, 0))
+        print(o, o.stream)
