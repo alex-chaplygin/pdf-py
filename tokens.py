@@ -72,8 +72,10 @@ def skip_whitespace():
     """
     global cur_char
 
-    while cur_char in separators:
-        cur_char=get_char()
+    while cur_char in separators or cur_char == '%':
+        if cur_char == '%':
+            skip_comment()
+        cur_char = get_char()
 
 
 def skip_comment():
@@ -84,7 +86,9 @@ def skip_comment():
     "123 % ----"
 
     """
-    pass
+    global cur_char
+    while  cur_char != '\n':
+        cur_char = get_char()
 
 
 def get_number():
