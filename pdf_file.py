@@ -15,7 +15,7 @@ version = None
 # ключ - ссылка (11, 0), значение - объект Object
 objects = {}
 # таблица ссылок, содержит записи ()
-xref_table = []
+xref_table = {}
 # ссылка на корневой объект - начало документа (ссылка (1, 0))
 root_ref = None
 # словарь трейлера
@@ -82,6 +82,7 @@ def load_xref_stream():
     global root_ref
     global objects
     obj = parser.parse_object()
+    print(obj, len(obj.stream))
     objects[(obj.num1, obj.num2)] = obj
     if obj.get('Type') != NameObject('XRef'):
         raise Exception('Not XRef')
@@ -95,7 +96,7 @@ def load_xref_stream():
     w = obj.get('W')
     xref_table.clear()
     pos = 0
-    for i in range(0, len(obj.stream), sum(w)):
+    for i in range(index[1]):
         entry = [0, 0, 0] # 0 12 12 10
         for j in range(3):
             offset = 0
@@ -104,7 +105,7 @@ def load_xref_stream():
                 offset += obj.stream[pos]
                 pos += 1
             entry[j] = offset
-        xref_table.append(tuple(entry))
+        xref_table[index[0] + i] = tuple(entry)
 
 
 def load_xref_table():
@@ -125,8 +126,24 @@ def load_xref_table():
     if parser.cur_token != ('id', 'xref'):
         load_xref_stream()
     else:
-        pass
-        #raise Exception('Первый вариант таблицы ссылок')
+        parser.cur_token = tokens.get_token()
+        n0 = parser.parse_data()
+        n1 = parser.parse_data()
+        print(n0, n1)
+        for k in range(n1):
+            t = ''
+            offset = parser.parse_data()
+            gen = parser.parse_data()
+            i = parser.parse_data()
+            print(offset, gen, i)
+            if i == 'f':
+                t = 0
+            elif i == 'n':
+                t = 1
+            else:
+                print(i)
+                raise Exception("No type")
+            xref_table[n0 + k] = (t, offset, 0)
     
 
 def load_header():
