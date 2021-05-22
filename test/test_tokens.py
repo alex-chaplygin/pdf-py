@@ -76,4 +76,8 @@ if __name__ == '__main__':
     test('1 0 R>>', ('num', 1))
     test('0 R>>', ('num', 0))
     test('R>>', ('id', 'R'))
-    
+    print()
+    test('  %432\n10', ('num', 10))
+    test('\n%432\n20', ('num', 20))
+    test('%432\n30', ('num', 30))
+
