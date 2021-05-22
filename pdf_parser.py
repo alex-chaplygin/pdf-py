@@ -158,7 +158,14 @@ def parse_stream(data_dict):
         return b''
     length = data_dict['Length']
     s = get_bytes(length) # 0xa already read
+#    print(s)
+    if s[0] == 0x0a:
+        s += get_bytes(1)
+        s = s[1:]
+#    print(s)
     cur_token = get_token()
+#    print(data_dict)
+#    print(cur_token)
     if cur_token != ('id', 'endstream') and cur_token != ('id', 'xendstream'):
         raise Exception('No endstream')
     cur_token = get_token()
