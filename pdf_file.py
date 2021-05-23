@@ -71,8 +71,9 @@ def load(file_name):
     version = load_header()
     xref_pos = load_xrefpos()
     pdf_file.seek(xref_pos)
+    xref_table.clear()
+    objects.clear()
     load_xref_table()
-    load_trailer()
 
 
 def load_xref_stream():
@@ -95,18 +96,18 @@ def load_xref_stream():
     global root_ref
     global objects
     obj = parser.parse_object()
+    print(obj, len(obj.stream))
     objects[(obj.num1, obj.num2)] = obj
     if obj.get('Type') != NameObject('XRef'):
         raise Exception('Not XRef')
     size = obj.get('Size')
     root_ref = obj.get('Root')
-    if NameObject('Index') in obj.data:
+    if 'Index' in obj.data:
         i = obj.get('Index')
         index = (i[0], i[1])
     else:
         index = (0, size)
     w = obj.get('W')
-    xref_table.clear()
     pos = 0
     for i in range(index[1]):
         entry = [0, 0, 0] # 0 12 12 10
@@ -118,6 +119,10 @@ def load_xref_stream():
                 pos += 1
             entry[j] = offset
         xref_table[index[0] + i] = tuple(entry)
+    if 'Prev' in obj.data:
+        prev = obj.get('Prev')
+        pdf_file.seek(prev)
+        load_xref_table()
 
 
 def load_xref_table():
@@ -131,15 +136,26 @@ def load_xref_table():
     ...
     '''
     global xref_table
-    global root_ref
-    global objects
     tokens.cur_char = tokens.get_char()
     parser.cur_token = tokens.get_token()
     if parser.cur_token != ('id', 'xref'):
         load_xref_stream()
     else:
-        pass
-        #raise Exception('Первый вариант таблицы ссылок')
+        parser.cur_token = tokens.get_token()
+        index = parser.parse_data()
+        size = parser.parse_data()
+        for i in range(size):
+            offset = parser.parse_data()
+            gen = parser.parse_data()
+            t = parser.parse_data()
+            if t == 'f':
+                t = FREE
+            elif t == 'n':
+                t = NORMAL
+            else:
+                raise Exception("Неверный тип")
+            xref_table[index + i] = (t, offset, gen)
+        load_trailer()
     
 
 def load_header():
@@ -184,14 +200,17 @@ def load_trailer():
     '''
     global trailer
     global root_ref
-    if root_ref != None:
-        return # no trailer
     tokens.cur_char = tokens.get_char()
     parser.cur_token = tokens.get_token()
     while parser.cur_token != ('<<',):
         parser.cur_token = tokens.get_token()
     trailer = parser.parse_data()
-    root_ref = trailer['Root']
+    if root_ref == None:
+        root_ref = trailer['Root']
+    if 'Prev' in trailer:
+        prev = trailer['Prev']
+        pdf_file.seek(prev)
+        load_xref_table()
 
         
 def read_string_reverse():
