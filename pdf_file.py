@@ -62,8 +62,9 @@ def load(file_name):
     version = load_header()
     xref_pos = load_xrefpos()
     pdf_file.seek(xref_pos)
+    xref_table.clear()
+    objects.clear()
     load_xref_table()
-    load_trailer()
 
 
 def load_xref_stream():
@@ -92,13 +93,12 @@ def load_xref_stream():
         raise Exception('Not XRef')
     size = obj.get('Size')
     root_ref = obj.get('Root')
-    if NameObject('Index') in obj.data:
+    if 'Index' in obj.data:
         i = obj.get('Index')
         index = (i[0], i[1])
     else:
         index = (0, size)
     w = obj.get('W')
-    xref_table.clear()
     pos = 0
     for i in range(index[1]):
         entry = [0, 0, 0] # 0 12 12 10
@@ -110,6 +110,10 @@ def load_xref_stream():
                 pos += 1
             entry[j] = offset
         xref_table[index[0] + i] = tuple(entry)
+    if 'Prev' in obj.data:
+        prev = obj.get('Prev')
+        pdf_file.seek(prev)
+        load_xref_table()
 
 
 def load_xref_table():
@@ -123,31 +127,26 @@ def load_xref_table():
     ...
     '''
     global xref_table
-    global root_ref
-    global objects
     tokens.cur_char = tokens.get_char()
     parser.cur_token = tokens.get_token()
     if parser.cur_token != ('id', 'xref'):
         load_xref_stream()
     else:
         parser.cur_token = tokens.get_token()
-        n0 = parser.parse_data()
-        n1 = parser.parse_data()
-        print(n0, n1)
-        for k in range(n1):
-            t = ''
+        index = parser.parse_data()
+        size = parser.parse_data()
+        for i in range(size):
             offset = parser.parse_data()
             gen = parser.parse_data()
-            i = parser.parse_data()
-            print(offset, gen, i)
-            if i == 'f':
-                t = 0
-            elif i == 'n':
-                t = 1
+            t = parser.parse_data()
+            if t == 'f':
+                t = FREE
+            elif t == 'n':
+                t = NORMAL
             else:
-                print(i)
-                raise Exception("No type")
-            xref_table[n0 + k] = (t, offset, 0)
+                raise Exception("Неверный тип")
+            xref_table[index + i] = (t, offset, gen)
+        load_trailer()
     
 
 def load_header():
@@ -192,14 +191,17 @@ def load_trailer():
     '''
     global trailer
     global root_ref
-    if root_ref != None:
-        return # no trailer
     tokens.cur_char = tokens.get_char()
     parser.cur_token = tokens.get_token()
     while parser.cur_token != ('<<',):
         parser.cur_token = tokens.get_token()
     trailer = parser.parse_data()
-    root_ref = trailer['Root']
+    if root_ref == None:
+        root_ref = trailer['Root']
+    if 'Prev' in trailer:
+        prev = trailer['Prev']
+        pdf_file.seek(prev)
+        load_xref_table()
 
         
 def read_string_reverse():
@@ -237,12 +239,15 @@ def get_object(ref):
     Возвращает объект Object
     '''
     global objects
+    global xref_table
 
     if objects.get(ref):
         obj = objects[ref]
     else:
+#        if ref[0] not in xref_table:
+#            return Object(ref[0], ref[1], None)
+#        print(ref)
         r = xref_table[ref[0]]
-        print(r)
         if r[0] == NORMAL:
             pdf_file.seek(r[1])
             tokens.cur_char = tokens.get_char()
@@ -250,6 +255,7 @@ def get_object(ref):
             obj = parser.parse_object()
             objects[ref] = obj
         elif r[0] == FREE:
+            return Object(ref[0], ref[1], None)
             raise Exception('Ошибка!')
         elif r[0] == COMPRESSED:
             obj = get_object_stream_object()
@@ -290,6 +296,6 @@ if __name__ == '__main__':
     print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
-    for i in range(1, 456):
+    for i in xref_table.keys():
         o = get_object((i, 0))
         print(o, o.stream)
