@@ -157,16 +157,25 @@ def parse_stream(data_dict):
     if cur_token != ('id', 'stream'):
         return b''
     length = data_dict['Length']
-    s = get_bytes(length) # 0xa already read
-#    print(s)
-    if s[0] == 0x0a:
-        s += get_bytes(1)
-        s = s[1:]
-#    print(s)
-    cur_token = get_token()
 #    print(data_dict)
-#    print(cur_token)
-    if cur_token != ('id', 'endstream') and cur_token != ('id', 'xendstream'):
-        raise Exception('No endstream')
+    if type(length) == tuple:
+#    print('dict', data_dict)
+        s = b''
+        while s[-9:] != b'endstream':
+            s += get_bytes(1)
+#        print(s)
+        s = s[:-9].strip()
+#        print(s)
+    else:
+        s = get_bytes(length) # 0xa already read
+        if s[0] == 0x0a:
+            s += get_bytes(1)
+            s = s[1:]
+        cur_token = get_token()
+        if cur_token != ('id', 'endstream') and cur_token != ('id', 'xendstream'):
+            raise Exception('No endstream')
     cur_token = get_token()
+    if data_dict['Filter'] != NameObject('FlateDecode'):
+        print('Неподдерживается фильтр', data_dict['Filter'])
+        return b''
     return s
