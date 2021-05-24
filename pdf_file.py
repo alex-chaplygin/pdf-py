@@ -63,16 +63,19 @@ def load(file_name):
     '''
     global pdf_file
     global version
+    global objects
+    global root_ref
     if pdf_file != None:
         close(pdf_file)
+        xref_table.clear()
+        objects.clear()
+        root_ref = None
     tokens.get_char = get_char
     parser.get_bytes = get_bytes
     pdf_file = open(file_name, 'rb')
     version = load_header()
     xref_pos = load_xrefpos()
     pdf_file.seek(xref_pos)
-    xref_table.clear()
-    objects.clear()
     load_xref_table()
 
 
