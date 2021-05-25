@@ -3,6 +3,7 @@
 '''
 import tokens as tok
 from Object import *
+from NameObject import *
 
 
 # текущая лексема
@@ -63,11 +64,22 @@ def parse_data():
     в каждом случае перед возвратом значения - присвоить новое значение текущему токену
     '''
     global cur_token
-    k = None
-    if len(cur_token) == 2:
-        (t, k) = cur_token
+    t = cur_token
     cur_token = get_token()
-    return k
+    if t == ('id', 'true'):
+        return True
+    if t == ('id', 'false'):
+        return False
+    if t == ('id', 'null'):
+        return None
+    if t == ('/',):
+        return NameObject(cur_token[1])
+    if t == ('[',):
+        return parse_array()
+    if t == ('<<',):
+        return parse_dict()
+    else:
+        return t[1]
 
 
 def parse_array():
