@@ -68,15 +68,17 @@ def parse_data():
     cur_token = get_token()
     if t == ('id', 'true'):
         return True
-    if t == ('id', 'false'):
+    elif t == ('id', 'false'):
         return False
-    if t == ('id', 'null'):
+    elif t == ('id', 'null'):
         return None
-    if t == ('/',):
-        return NameObject(cur_token[1])
-    if t == ('[',):
+    elif t == ('/',):
+        c = cur_token
+        cur_token = get_token()
+        return NameObject(c[1])
+    elif t == ('[',):
         return parse_array()
-    if t == ('<<',):
+    elif t == ('<<',):
         return parse_dict()
     else:
         return t[1]
