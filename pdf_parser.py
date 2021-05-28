@@ -13,7 +13,7 @@ cur_token = None
 get_token = tok.get_token
 
 # функция для следующего байта
-get_byte = None
+get_bytes = None
 
 
 def parse_object():
@@ -119,8 +119,18 @@ def parse_dict():
     ключ записывается как строка (data из NameObject)
     возвращает словарь
     '''
-    pass
-
+    global cur_token
+    dic = {}
+    while cur_token != ('>>',):
+        key = parse_data()
+        val = parse_data()
+        if cur_token[0] == 'num':
+            val = (val, cur_token[1])
+            cur_token = get_token() # R
+            cur_token = get_token()
+        dic[key.data] = val
+    cur_token = get_token()
+    return dic
 
 def parse_stream(data_dict):
     '''
@@ -130,12 +140,39 @@ def parse_stream(data_dict):
     распознает поток байт (если есть)
     если текущий токен не stream, то выход
     data_dict - словарь из него извлекается по ключу 'Length' длина потока в байтах
+    если длина косвенная, то считываются байты, пока не встретится endstream
     если значение текущего токена = stream
-       пропускаются разделители (tok.skip_whitespace)
-       читается заданное число байт (get_byte - чтение байт), 
+       пропускаются переводы строк
+       читается заданное число байт (get_bytes - чтение байт), 
        накапливается в строке байт
        в конеце нужно проверить наличие endstream
+       выводится предупреждение, если фильтр отличен от FlateDecode
        возвращается строка байт
     иначе возвращает None
     '''
-    return b''
+    global cur_token
+    if cur_token != ('id', 'stream'):
+        return b''
+    length = data_dict['Length']
+#    print(data_dict)
+    if type(length) == tuple:
+#    print('dict', data_dict)
+        s = b''
+        while s[-9:] != b'endstream':
+            s += get_bytes(1)
+#        print(s)
+        s = s[:-9].strip()
+#        print(s)
+    else:
+        s = get_bytes(length) # 0xa already read
+        if s[0] == 0x0a:
+            s += get_bytes(1)
+            s = s[1:]
+        cur_token = get_token()
+        if cur_token != ('id', 'endstream') and cur_token != ('id', 'xendstream'):
+            raise Exception('No endstream')
+    cur_token = get_token()
+    if data_dict['Filter'] != NameObject('FlateDecode'):
+        print('Неподдерживается фильтр', data_dict['Filter'])
+        return b''
+    return s
