@@ -23,7 +23,7 @@ page_list = []
 page_cache = {}
 
 # класс для страниц
-# p1 = Page(resources=(100, 0), contents=(200, 0))
+# p1 = Page(resources={}, contents=(200, 0))
 Page = namedtuple('Page', 'resources media_box contents')
 
 
