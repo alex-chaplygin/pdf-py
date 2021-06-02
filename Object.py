@@ -39,5 +39,8 @@ class Object:
         """
         представление объекта в виде строки
         """
-        return '(Object ' + str(self.num1) + ' ' + str(self.num2) + ' ' + str(self.data) + ')'
+        s = '(Object ' + str(self.num1) + ' ' + str(self.num2) + ' ' + str(self.data) + ')\n'
+        if self.stream != None:
+            s += ''.join([chr(x) for x in self.stream])
+        return s
     
