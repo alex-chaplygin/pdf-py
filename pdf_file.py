@@ -99,7 +99,7 @@ def load_xref_stream():
     global root_ref
     global objects
     obj = parser.parse_object()
-    print(obj, len(obj.stream))
+    #print(obj, len(obj.stream))
     objects[(obj.num1, obj.num2)] = obj
     if obj.get('Type') != NameObject('XRef'):
         raise Exception('Not XRef')
@@ -243,6 +243,7 @@ def get_object(ref):
     Загружает объект PDF
 
     ref - ссылка на объект: (12, 0)
+    Если объекта нет в таблице ссылок, возвращается пустой объект
     Если объект есть в словаре, то объект берется оттуда
     иначе загружает объект из файла:
     анализируется тип записи в таблице
@@ -252,12 +253,31 @@ def get_object(ref):
        установка текущей лексемы (cur_token)
        чтение объекта (parse_object)
        добавляем объект в словарь
-    если свободный объект, то - ошибка
+    если свободный объект, то возвращает пустой объект
     если сжатый объект вызываем чтение сжатого объекта get_object_stream_object
     Возвращает объект Object
     '''
     global objects
-    pass
+    if objects.get(ref):
+        obj = objects[ref]
+    else:
+        if ref[0] not in xref_table:
+            return Object(ref[0], ref[1], None)
+        r = xref_table[ref[0]]
+        if r[0] == NORMAL:
+            pdf_file.seek(r[1])
+            tokens.cur_char = tokens.get_char()
+            parser.cur_token = tokens.get_token()
+            obj = parser.parse_object()
+            objects[ref] = obj
+        elif r[0] == FREE:
+            return Object(ref[0], ref[1], None)
+        elif r[0] == COMPRESSED:
+            obj = get_object_stream_object(r[1], r[2], ref[0])
+        else:
+            print(r[0])
+            raise Exception("Unknown type")
+    return obj
 
 
 def get_object_stream_object(obj_stream_num, index, obj_num):
@@ -297,7 +317,8 @@ if __name__ == '__main__':
     from sys import argv
     load(argv[1])
     print('Version:', version)
-    print('objects:', objects)
+#    print('objects:', objects)
     print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
+    print(get_object((1,0)))
