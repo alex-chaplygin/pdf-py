@@ -98,6 +98,16 @@ def parse_array():
     while cur_token != (']',):
         arr.append(parse_data())
     cur_token = get_token()
+    if 'R' in arr:
+        arr2 = []
+        for i in range(len(arr)):
+            if arr[i] == 'R':
+                p2 = arr2.pop()
+                p1 = arr2.pop()
+                arr2.append((p1, p2))
+            else:
+                arr2.append(arr[i])
+        arr = arr2
     return arr
 
 
