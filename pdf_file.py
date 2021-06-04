@@ -34,6 +34,8 @@ xref_table = {}
 root_ref = None
 # словарь трейлера
 trailer = {}
+# позиция при считывании из потока объекта
+stream_pos = 0
 
 
 def get_char():
@@ -310,7 +312,47 @@ def get_object_stream_object(obj_stream_num, index, obj_num):
     добавляем объект в словарь
     возвращает: объект Object
     '''
-    pass
+    global stream_pos
+    obj = get_object((obj_stream_num, 0))
+    if obj.get('Type') != NameObject('ObjStm'):
+        raise Exception("Тип объекта = ObjStm")
+    num = obj.get('N')
+    stream_pos = 0
+
+    def get_stream_char():
+        global stream_pos
+        stream_pos += 1
+        if stream_pos  > len(obj.stream):
+            return -1
+        else:
+            return chr(obj.stream[stream_pos - 1])
+
+    tokens.get_char = get_stream_char
+    tokens.cur_char = tokens.get_char()
+    parser.cur_token = tokens.get_token()
+    objs = []
+    for i in range(num):
+        on = parser.parse_data()
+        ofs = parser.parse_data()
+        objs.append(on)
+#        if on == obj_num and i == index:
+#            obj_ofs = ofs
+#    if ofs == -1:
+#        return Object(obj_num, 0, None)
+    '''
+    stream_pos += obj_ofs - 3
+    tokens.cur_char = tokens.get_char()
+    parser.cur_token = tokens.get_token()
+    data = parser.parse_data()
+    tokens.get_char = get_char
+    obj = Object(obj_num, 0, data)
+    objects[(obj_num, 0)] = obj
+    '''
+    for i in range(num):
+        data = parser.parse_data()
+        o = Object(objs[i], 0, data)
+        objects[(objs[i], 0)] = o
+    return objects[(objs[index], 0)]
 
 
 if __name__ == '__main__':
@@ -321,4 +363,4 @@ if __name__ == '__main__':
     print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
-    print(get_object((1,0)))
+    print(get_object((34, 0)))
