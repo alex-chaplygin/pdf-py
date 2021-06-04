@@ -48,6 +48,7 @@ if __name__ == '__main__':
     test('[1 2 3]', [1, 2, 3])
     test('[1 (Test) 3]', [1, 'Test', 3])
     test('[1 [2 3 4] 3]', [1, [2, 3, 4], 3])
+    test('[44/a44/a45/a46 47/.notdef]', [44, NameObject('a44'), NameObject('a45'), NameObject('a46'), 47, NameObject('.notdef')])
     test('<</Type 1>>', {'Type' : 1})
     test('<</Type /Ref /Length 1000>>', {
         'Type' : NameObject('Ref'),
