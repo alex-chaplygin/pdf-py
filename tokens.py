@@ -10,9 +10,10 @@ cur_char = ''
 get_char = None
 
 separators = ['\x00', '\x09', '\x0a',  '\x0c',  '\x0d',  '\x20']
-
+delimiters = ['(', ')', '<', '>', '[', ']', '{', '}', '/', '%']
 digits = [x for x in "0123456789"]
-letters = [x for x in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+letters = [x for x in ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
 
 
 def get_token():
@@ -36,9 +37,9 @@ def get_token():
     if cur_char == -1:
         return ('end',)
     skip_whitespace()
-    if cur_char.isdigit() or cur_char == '+' or cur_char == '-':
+    if cur_char in digits or cur_char == '+' or cur_char == '-':
         return get_number()
-    elif cur_char.isalpha():
+    elif cur_char in letters:
         return get_id()
     elif cur_char == '(':
         return get_literal_string()
@@ -127,7 +128,7 @@ def get_id():
     """
     global cur_char
     iden = ''
-    while cur_char in letters or cur_char in digits or cur_char == '#':
+    while cur_char not in separators and cur_char not in delimiters:
         if cur_char == -1:
             break
         elif cur_char == '#':
