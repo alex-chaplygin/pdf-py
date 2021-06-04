@@ -30,7 +30,7 @@ ET
                 0 1.2 0
                 0 0 1
 '''
-from Matrix import *
+from Matrix3 import *
 
 # текущая матрица трансформаций
 # преобразование из пользовательских координат в координаты устройства
@@ -50,22 +50,6 @@ text_leading = 0
 # стек операндов
 # заполняется перед выполнением оператора
 operands_stack = []
-
-# операторы графики
-operators = {
-    'q': push_stack,
-    'Q': pop_stack,
-    'cm': set_transformation,
-    'Tl': lambda: text_leading = operands_stack.pop()
-    'Tf': set_font,
-    'Td': set_text_pos,
-    'TD': set_next_line,
-    'tm': set_text_matrix,
-    'T*': next_line,
-    'Tj': show_text,
-    '\'': next_line_show_text()
-    'BT': begin_text,
-}
 
 # размеры страницы в пользовательских координатах
 media_box = ()
@@ -96,14 +80,14 @@ def push_stack():
     '''
     сохранить текущую матрицу трансформаций в стеке
     '''
-    pass
+    matrix_stack.append(ctm)
 
 
 def pop_stack():
     '''
     восстановить текущую матрицу трансформаций из стека
     '''
-    pass
+    matrix_stack.pop()
 
 
 def set_transformation():
@@ -113,7 +97,15 @@ def set_transformation():
     операнды a b c d e f - создается новая матрица
     умножается на текущую
     '''
-    pass
+    global ctm
+    f = operands_stack.pop()
+    e = operands_stack.pop()
+    d = operands_stack.pop()
+    c = operands_stack.pop()
+    b = operands_stack.pop()
+    a = operands_stack.pop()
+    mtx = Matrix3(a, b, c, d, e, f)
+    ctm = mtx * ctm
 
 
 def set_font():
@@ -122,6 +114,10 @@ def set_font():
 
     операнды: имя шрифта и размер
     '''
+    global current_size
+
+    current_size = operands_stack.pop()
+    name = operands_stack.pop()
 
 
 def set_text_pos():
@@ -132,7 +128,12 @@ def set_text_pos():
     установить матрицу для перемещения tx ty
     умножить  матрицу перемещения на матрицу текста и присвоить матрице текста
     '''
-    pass
+    global text_matrix
+    ty = operands_stack.pop()
+    tx = operands_stack.pop()
+    matrix = Matrix3()
+    matrix = matrix.translate(tx, ty)
+    text_matrix = matrix * text_matrix
 
 
 def set_next_line():
@@ -193,3 +194,27 @@ def begin_text():
     устанавливает матрицу текста в единичную
     '''
     pass
+
+
+def set_leading():
+    global text_leading
+    text_leading = operands_stack.pop()
+
+    
+def interpret(page):
+    global text_leading
+    # операторы графики
+    operators = {
+        'q': push_stack,
+        'Q': pop_stack,
+        'cm': set_transformation,
+        'Tl': set_leading,
+        'Tf': set_font,
+        'Td': set_text_pos,
+        'TD': set_next_line,
+        'tm': set_text_matrix,
+        'T*': next_line,
+        'Tj': show_text,
+        '\'': next_line_show_text,
+        'BT': begin_text,
+    }
