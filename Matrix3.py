@@ -1,4 +1,4 @@
-from math import sin, cos
+from math import sin, cos, pi, sqrt
 
 
 class Matrix3:
@@ -113,22 +113,33 @@ class Matrix3:
 if __name__ == '__main__':
     def test(res, req):
         print('req =', req, 'res = ', res, end='')
-        if res != req:
+        if (round(res[0], 4), round(res[1], 4)) != (round(req[0], 4), round(req[1], 4)):
             print(' !!! Неудача')
         else:
             print(' Успех')
 
-            
-    test(Matrix3().mult_vector((10, 20, 1)), (10, 20))
+
+    m = Matrix3(1, 2, 3, 4, 5, 6)
+    print(m) # тест печати
+    test(Matrix3().mult_vector((10, 20, 1)), (10, 20)) # тест единичной матрицы
     m = Matrix3()
-    m.translate(1, 1) 
-    test(m.mult_vector((10, 20, 1)), (11, 21))
+    m.translate(1, 1)
+    print(m)
+    test(m.mult_vector((10, 20, 1)), (11, 21)) # тест переноса
     m = Matrix3()
     m.scale(0.5, 0.5) 
-    test(m.mult_vector((10, 20, 1)), (5, 10))
+    print(m)
+    test(m.mult_vector((10, 20, 1)), (5, 10)) # тест масштабирования
+    m = Matrix3()
+    m.rotate(pi / 4) 
+    print(m)
+    test(m.mult_vector((20, 0, 1)), (20 * sqrt(2) / 2, 20 * sqrt(2) / 2)) # тест поворота
     m1 = Matrix3()
     m1.translate(10, 10) 
     m2 = Matrix3()
-    m2.scale(0.5, 0.5) 
-    m = m1 * m2
-    test(m.mult_vector((10, 20, 1)), (10, 15))
+    m2.scale(0.5, 2) 
+    m = m1 * m2 
+    print(m1)
+    print(m2)
+    print(m)
+    test(m.mult_vector((10, 20, 1)), (10, 60)) # тест перемножения матриц, комбинация транформаций
