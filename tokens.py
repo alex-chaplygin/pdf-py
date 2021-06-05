@@ -179,7 +179,19 @@ def get_literal_string():
             s -= 1
         if s == 0:
             break
-        stroka += cur_char
+        if cur_char == '\\':
+            c1 = get_char()
+            if c1 == '(':
+                stroka += '('
+            elif c1 == ')':
+                stroka += '('
+            elif c1 == 'n':
+                stroka += '\n'
+            else:
+                c2, c3 = get_char(), get_char()
+                stroka += str(int(c1 + c2 + c3, 8))
+        else:
+            stroka += cur_char
         cur_char = get_char()
     cur_char = get_char()
     return ('str', stroka)
