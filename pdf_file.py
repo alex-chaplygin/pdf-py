@@ -170,7 +170,8 @@ def load_header():
     Первая строка файла %PDF-1.номер
     Возвращает номер версии: 1.0 - 1.7
     '''
-    pass
+    header = pdf_file.read(8)
+    return '1.' + chr(header[-1])
 
 
 def load_xrefpos():
@@ -335,19 +336,6 @@ def get_object_stream_object(obj_stream_num, index, obj_num):
         on = parser.parse_data()
         ofs = parser.parse_data()
         objs.append(on)
-#        if on == obj_num and i == index:
-#            obj_ofs = ofs
-#    if ofs == -1:
-#        return Object(obj_num, 0, None)
-    '''
-    stream_pos += obj_ofs - 3
-    tokens.cur_char = tokens.get_char()
-    parser.cur_token = tokens.get_token()
-    data = parser.parse_data()
-    tokens.get_char = get_char
-    obj = Object(obj_num, 0, data)
-    objects[(obj_num, 0)] = obj
-    '''
     for i in range(num):
         data = parser.parse_data()
         o = Object(objs[i], 0, data)
@@ -363,4 +351,4 @@ if __name__ == '__main__':
     print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
-    print(get_object((34, 0)))
+    print(get_object((int(argv[2]), 0)))
