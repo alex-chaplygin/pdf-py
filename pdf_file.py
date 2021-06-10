@@ -340,6 +340,7 @@ def get_object_stream_object(obj_stream_num, index, obj_num):
         data = parser.parse_data()
         o = Object(objs[i], 0, data)
         objects[(objs[i], 0)] = o
+    tokens.get_char = get_char
     return objects[(objs[index], 0)]
 
 
