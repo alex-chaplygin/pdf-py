@@ -73,7 +73,8 @@ def set_device(width, height):
     a                               b c d                                   e f
     width / media_width 0 0 -height / media_height 0 height
     '''
-    pass
+    global ctm
+    ctm = Matrix3(float(width) / media_box[2], 0, 0, float(-height) / media_box[3], 0, height)
 
 
 def push_stack():
