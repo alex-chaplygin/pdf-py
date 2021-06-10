@@ -13,6 +13,7 @@ root_ref --> /Type /Catalog
 [ p1 [p2 p3] p4 ]
 p1 = (resources={}, media_box=(0, 0, 700, 600), contents=(300, 0))
 '''
+from NameObject import *
 from collections import namedtuple
 import pdf_file
 
@@ -55,7 +56,15 @@ def load_pages(node):
         иначе ошибка
     '''
     global page_list
-    pass
+    for i in node.get('Kids'):
+        obj = pdf_file.get_object(i)
+        if obj.get('Type') == NameObject('Page'):
+            page = Page(resources = obj.get('Resources'), media_box = obj.get('MediaBox'), contents = obj.get('Contents'))
+            page_list.append(page)
+        elif obj.get('Type') == NameObject('Pages'):
+            load_pages(obj)
+        else:
+            raise Exception("Unknow page type")
 
 
 def get_page(num):
@@ -67,5 +76,30 @@ def get_page(num):
     если список, то загружаем все объекты и накапливаем содержимое в contents
     возвращает страницу Page с загруженным содержимым (вместо кортежа - строка байт)
     '''
-    page, count = get_page_from_node(page_list, num, 1)
-    return page
+    if num in page_cache:
+        return page_cache[num]
+    if num < 1 or num > len(page_list):
+        return None
+    page = page_list[num - 1]
+    if type(page.contents) == list:
+        contents = b''
+        for i in page.contents:
+            content = pdf_file.get_object(i)
+            contents += content.stream
+    else:
+        contents = pdf_file.get_object(page.contents).stream
+    if type(page.resources) == tuple:
+        resources = pdf_file.get_object(page.resources).data
+    else:
+        resources = page.resources
+    new_page = Page(contents=contents, resources=resources, media_box=page.media_box)
+    page_cache[num] = new_page
+    return new_page
+
+
+if __name__ == '__main__':
+    from sys import argv
+
+
+    load(argv[1])
+    print(get_page(int(argv[2])))
