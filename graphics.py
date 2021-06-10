@@ -30,6 +30,7 @@ ET
                 0 1.2 0
                 0 0 1
 '''
+import font
 from Matrix3 import *
 
 # текущая матрица трансформаций
@@ -53,6 +54,9 @@ operands_stack = []
 
 # размеры страницы в пользовательских координатах
 media_box = ()
+
+# текущая страница
+current_page = None
 
 # текущий шрифт
 current_font = 'Times'
@@ -108,17 +112,20 @@ def set_transformation():
     mtx = Matrix3(a, b, c, d, e, f)
     ctm = mtx * ctm
 
-
+    
 def set_font():
     '''
     установить шрифт - /F13 12 Tf
 
     операнды: имя шрифта и размер
+    загрузить шрифт из ресурсов (имя шрифта без слэша)
+    загрузить словарь подстановок для шрифта (ключ 'ToUnicode')
     '''
     global current_size
 
     current_size = operands_stack.pop()
-    name = operands_stack.pop()
+    name = operands_stack.pop().data
+    font.load(current_page.resources['Font'][name])
 
 
 def set_text_pos():
@@ -188,6 +195,20 @@ def next_line_show_text():
     '''
     pass
 
+
+def show_text_list():
+    '''
+    отобразить одну или более строк
+
+    операнд - список
+    [ (AWAY again) ] TJ
+    [ (A) 120 (W) 120 (A) 95 (Y again) ] TJ
+    проходим по списку, если элемент строка, то отображаем строку (show_text),
+    если число - то перемещаем текстовую матрицу по горизонтали на это число
+    '''
+    pass
+
+
 def begin_text():
     '''
     начало текста
@@ -217,5 +238,6 @@ def interpret(page):
         'T*': next_line,
         'Tj': show_text,
         '\'': next_line_show_text,
+        'TJ': show_text_list,
         'BT': begin_text,
     }
