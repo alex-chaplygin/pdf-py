@@ -37,6 +37,8 @@ def get_token():
     if cur_char == -1:
         return ('end',)
     skip_whitespace()
+    if cur_char == -1:
+        return ('end',)
     if cur_char in digits or cur_char == '+' or cur_char == '-':
         return get_number()
     elif cur_char in letters:
@@ -189,7 +191,7 @@ def get_literal_string():
                 stroka += '\n'
             else:
                 c2, c3 = get_char(), get_char()
-                stroka += str(int(c1 + c2 + c3, 8))
+                stroka += chr(int(c1 + c2 + c3, 8))
         else:
             stroka += cur_char
         cur_char = get_char()
