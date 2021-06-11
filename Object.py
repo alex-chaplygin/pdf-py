@@ -23,7 +23,10 @@ class Object:
 
     def get(self, key):
         if type(self.data) is dict:
-            return self.data[key]
+            if key in self.data:
+                return self.data[key]
+            else:
+                return None
         else:
             raise Exception('Данные объекта - не словарь')
 
