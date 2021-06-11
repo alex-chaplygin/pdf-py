@@ -103,3 +103,4 @@ if __name__ == '__main__':
 
     load(argv[1])
     print(get_page(int(argv[2])))
+    print(get_page(int(argv[2]) + 1))
