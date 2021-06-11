@@ -68,7 +68,7 @@ def load(file_name):
     global objects
     global root_ref
     if pdf_file != None:
-        close(pdf_file)
+        pdf_file.close()
         xref_table.clear()
         objects.clear()
         root_ref = None
