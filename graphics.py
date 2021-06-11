@@ -31,6 +31,9 @@ ET
                 0 0 1
 '''
 import font
+import tokens
+import pdf_parser as parser
+import pdf_file
 from Matrix3 import *
 
 # текущая матрица трансформаций
@@ -123,7 +126,7 @@ def set_font():
     '''
     global current_size
 
-    current_size = operands_stack.pop()
+    current_size = operands_stack.pop() / 1.5
     name = operands_stack.pop().data
     font.load(current_page.resources['Font'][name])
 
@@ -140,7 +143,7 @@ def set_text_pos():
     ty = operands_stack.pop()
     tx = operands_stack.pop()
     matrix = Matrix3()
-    matrix = matrix.translate(tx, ty)
+    matrix.translate(tx, ty)
     text_matrix = matrix * text_matrix
 
 
@@ -153,7 +156,14 @@ def set_next_line():
     создать матрицу для перемещения tx ty
     умножить  матрицу перемещения на матрицу текста и присвоить матрице текста
     '''
-    pass
+    global text_matrix
+    global text_leading
+    ty = operands_stack.pop()
+    tx = operands_stack.pop()
+    text_leading = -ty
+    matrix = Matrix3()
+    matrix.translate(tx, ty)
+    text_matrix = matrix * text_matrix
 
 
 def set_text_matrix():
@@ -162,7 +172,14 @@ def set_text_matrix():
 
     операнды a b c d e f 
     '''
-    pass
+    global text_matrix
+    f = operdans_stack.pop()
+    e = operdans_stack.pop()
+    d = operdans_stack.pop()
+    c = operdans_stack.pop()
+    b = operdans_stack.pop()
+    a = operdans_stack.pop()
+    text_matrix = Matrix3(a, b, c, d, e, f)
 
 
 def next_line():
@@ -172,7 +189,11 @@ def next_line():
     создать матрицу перемещения с параметрами 0 -text_leading
     умножить  матрицу перемещения на матрицу текста и присвоить матрице текста
     '''
-    pass
+    global text_matrix
+    global text_leading
+    matrix = Matrix3()
+    matrix.translate(0, -text_leading)
+    text_matrix = matrix * text_matrix
 
 
 def show_text():
@@ -184,7 +205,13 @@ def show_text():
     умножаем вектор (0, 0, 1) на общую матрицу - получаем координаты на экране
     добавляем текстовый объект в список объектов (x, y, string, current_font, current_size)
     '''
-    pass
+    global object_list
+    string = ''.join([font.get_char(c) for c in operands_stack.pop()])
+    matrix = text_matrix * ctm
+    coordinats = matrix.mult_vector((0, 0, 1))
+#    print(string)
+  #  print(text_matrix)
+    object_list.append((round(coordinats[0]), round(coordinats[1]), string, current_font, round(current_size)))
 
 
 def next_line_show_text():
@@ -193,7 +220,8 @@ def next_line_show_text():
 
     вызов next_line и show_text
     '''
-    pass
+    next_line()
+    show_text()
 
 
 def show_text_list():
@@ -206,7 +234,18 @@ def show_text_list():
     проходим по списку, если элемент строка, то отображаем строку (show_text),
     если число - то перемещаем текстовую матрицу по горизонтали на это число
     '''
-    pass
+    global operands_stack
+    lst = operands_stack.pop()
+    for i in lst:
+        if type(i) == str:
+            operands_stack.append(i)
+            show_text()
+        elif type(i) == int:
+            operands_stack.append(-float(i) / 1000)
+            operands_stack.append(0)
+            set_text_pos()
+        else:
+            raise Exception("Неизвестный тип в строке текста")
 
 
 def begin_text():
@@ -215,29 +254,66 @@ def begin_text():
 
     устанавливает матрицу текста в единичную
     '''
-    pass
+    global text_matrix
+    text_matrix = Matrix3()
 
-
+    
 def set_leading():
     global text_leading
     text_leading = operands_stack.pop()
 
+
+stream_pos = 0
+
+# операторы графики
+operators = {
+    'q': push_stack,
+    'Q': pop_stack,
+    'cm': set_transformation,
+    'Tl': set_leading,
+    'Tf': set_font,
+    'Td': set_text_pos,
+    'TD': set_next_line,
+    'tm': set_text_matrix,
+    'T*': next_line,
+    'Tj': show_text,
+    '\'': next_line_show_text,
+    'TJ': show_text_list,
+    'BT': begin_text,
+}
     
-def interpret(page):
-    global text_leading
-    # операторы графики
-    operators = {
-        'q': push_stack,
-        'Q': pop_stack,
-        'cm': set_transformation,
-        'Tl': set_leading,
-        'Tf': set_font,
-        'Td': set_text_pos,
-        'TD': set_next_line,
-        'tm': set_text_matrix,
-        'T*': next_line,
-        'Tj': show_text,
-        '\'': next_line_show_text,
-        'TJ': show_text_list,
-        'BT': begin_text,
-    }
+def interpret(page, width, height):
+    global current_page
+    global media_box
+    global stream_pos
+    global object_list
+
+    print(page)
+    current_page = page
+    if page.media_box != None:
+        media_box = page.media_box
+    object_list.clear()
+    set_device(width, height)
+    
+    stream_pos = 0
+    
+    def get_stream_char():
+        global stream_pos
+        stream_pos += 1
+        if stream_pos  > len(page.contents):
+            return -1
+        else:
+            return chr(page.contents[stream_pos - 1])
+            
+            
+    tokens.get_char = get_stream_char
+    tokens.cur_char = tokens.get_char()
+    parser.cur_token = tokens.get_token()
+    while parser.cur_token != ('end',):
+        data = parser.parse_data()
+#        print(data, '', end='')
+        if type(data) == list or data not in operators:
+            operands_stack.append(data)
+        else:
+            operators[data]()
+    tokens.get_char = pdf_file.get_char
