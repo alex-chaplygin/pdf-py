@@ -70,6 +70,8 @@ current_size = 12
 # список объектов для отрисовки
 object_list = []
 
+text_pos = [0, 0, 1]
+
 
 def set_device(width, height):
     '''
@@ -86,16 +88,22 @@ def set_device(width, height):
 
 def push_stack():
     '''
-    сохранить текущую матрицу трансформаций в стеке
+    сохранить сотояние графики
     '''
+    global matrix_stack
     matrix_stack.append(ctm)
+    matrix_stack.append(text_matrix)
 
 
 def pop_stack():
     '''
-    восстановить текущую матрицу трансформаций из стека
+    восстановить состояние графики
     '''
-    matrix_stack.pop()
+    global text_matrix
+    global ctm
+    global matrix_stack
+    text_matrix = matrix_stack.pop()
+    ctm = matrix_stack.pop()
 
 
 def set_transformation():
@@ -112,8 +120,7 @@ def set_transformation():
     c = operands_stack.pop()
     b = operands_stack.pop()
     a = operands_stack.pop()
-    mtx = Matrix3(a, b, c, d, e, f)
-    ctm = mtx * ctm
+    ctm = Matrix3(a, b, c, d, e, f) * ctm
 
     
 def set_font():
@@ -126,7 +133,7 @@ def set_font():
     '''
     global current_size
 
-    current_size = operands_stack.pop() / 1.5
+    current_size = operands_stack.pop()
     name = operands_stack.pop().data
     font.load(current_page.resources['Font'][name])
 
@@ -173,6 +180,7 @@ def set_text_matrix():
     операнды a b c d e f 
     '''
     global text_matrix
+    global text_pos
     f = operdans_stack.pop()
     e = operdans_stack.pop()
     d = operdans_stack.pop()
@@ -180,6 +188,7 @@ def set_text_matrix():
     b = operdans_stack.pop()
     a = operdans_stack.pop()
     text_matrix = Matrix3(a, b, c, d, e, f)
+    text_pos = [0, 0, 1]
 
 
 def next_line():
@@ -191,9 +200,11 @@ def next_line():
     '''
     global text_matrix
     global text_leading
+    global text_pos
     matrix = Matrix3()
     matrix.translate(0, -text_leading)
     text_matrix = matrix * text_matrix
+    text_pos = [0, 0, 1]
 
 
 def show_text():
@@ -202,16 +213,17 @@ def show_text():
 
     операнд: строка текста
     текстовую матрицу умножить на матрицу трансформаций, получаем общую матрицу
-    умножаем вектор (0, 0, 1) на общую матрицу - получаем координаты на экране
+    умножаем вектор text_pos на общую матрицу - получаем координаты на экране
     добавляем текстовый объект в список объектов (x, y, string, current_font, current_size)
     '''
     global object_list
     string = ''.join([font.get_char(c) for c in operands_stack.pop()])
     matrix = text_matrix * ctm
-    coordinats = matrix.mult_vector((0, 0, 1))
+    coordinats = matrix.mult_vector(tuple(text_pos))
+
 #    print(string)
   #  print(text_matrix)
-    object_list.append((round(coordinats[0]), round(coordinats[1]), string, current_font, round(current_size)))
+    object_list.append((round(coordinats[0]), round(coordinats[1]), string, current_font, round(current_size * ctm.matrix[1][1])))
 
 
 def next_line_show_text():
@@ -235,15 +247,16 @@ def show_text_list():
     если число - то перемещаем текстовую матрицу по горизонтали на это число
     '''
     global operands_stack
+    global text_pos
     lst = operands_stack.pop()
+    text_pos = [0, 0, 1]
     for i in lst:
         if type(i) == str:
+            prev = i
             operands_stack.append(i)
             show_text()
-        elif type(i) == int:
-            operands_stack.append(-float(i) / 1000)
-            operands_stack.append(0)
-            set_text_pos()
+        elif type(i) == int or type(i) == float:
+            text_pos[0] = text_pos[0] + float(i) * font.font_matrix.matrix[0][0] + font.get_width(prev, current_size)
         else:
             raise Exception("Неизвестный тип в строке текста")
 
@@ -255,7 +268,10 @@ def begin_text():
     устанавливает матрицу текста в единичную
     '''
     global text_matrix
+    global text_pos
     text_matrix = Matrix3()
+    text_pos = [0, 0, 1]
+
 
     
 def set_leading():
@@ -290,8 +306,8 @@ def interpret(page, width, height):
 
     print(page)
     current_page = page
-    if page.media_box != None:
-        media_box = page.media_box
+    if current_page.media_box != None:
+        media_box = current_page.media_box
     object_list.clear()
     set_device(width, height)
     
@@ -312,8 +328,9 @@ def interpret(page, width, height):
     while parser.cur_token != ('end',):
         data = parser.parse_data()
 #        print(data, '', end='')
-        if type(data) == list or data not in operators:
-            operands_stack.append(data)
-        else:
-            operators[data]()
+        if type(data) != dict :
+            if (type(data) == list or data not in operators):
+                operands_stack.append(data)
+            else:
+                operators[data]()
     tokens.get_char = pdf_file.get_char
