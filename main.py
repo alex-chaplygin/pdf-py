@@ -28,13 +28,13 @@ class Main:
         self.window = Tk()
         self.window.title('PDF просмотр')
         self.window.geometry('500x500')
-        self.canvas = Canvas(self.window, width=500, height=800)
+        self.canvas = Canvas(self.window, width=500, height=800, bg='white')
         self.canvas.grid(column=0, row=0)
         menu = Menu(self.window)
         self.window.config(menu=menu)
         menu.add_command(label='Открыть', command=self.open)
-        menu.add_command(label='Предыдущая страница', command=self.next)
-        menu.add_command(label='Следующая страница', command=self.previous)
+        menu.add_command(label='Предыдущая страница', command=self.previous)
+        menu.add_command(label='Следующая страница', command=self.next)
         self.page = 1
 
         
@@ -45,7 +45,7 @@ class Main:
 
     def draw(self):
         self.canvas.delete("all")
-        graphics.interpret(document.get_page(self.page), 500, 700)
+        graphics.interpret(document.get_page(self.page), 400, 700)
         for elem in graphics.object_list:
 #            print(elem)
             if type(elem[2]) == str:
@@ -56,18 +56,27 @@ class Main:
 
     def open(self):
         (file, ) = filedialog.askopenfilenames()
-        document.load(file)
-        self.draw()            
+        try:
+            document.load(file)
+            self.page = 1
+            self.draw()
+        except Exception as e:
+            print(e)
 
         
     def next(self):
-        self.page += 1
-        self.draw()
+        if self.page < len(document.page_list):
+            self.page += 1
+            try:
+                self.draw()
+            except Exception as e:
+                print(e)
 
 
     def previous(self):
-        self.page -= 1
-        self.draw()
+        if self.page > 1:
+            self.page -= 1
+            self.draw()
 
         
 main = Main()
