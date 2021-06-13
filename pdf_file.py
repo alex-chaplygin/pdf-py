@@ -352,4 +352,6 @@ if __name__ == '__main__':
     print('trailer:', trailer)
     print('root:', root_ref)
     print('xref_table:', xref_table)
+#    for k in xref_table.keys():
+  #      print(get_object((k, 0)))
     print(get_object((int(argv[2]), 0)))
