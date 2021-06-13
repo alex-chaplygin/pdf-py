@@ -1,4 +1,5 @@
 import zlib
+from NameObject import *
 
 
 class Object:
@@ -15,10 +16,15 @@ class Object:
         self.num1 = num1
         self.num2= num2
         self.data = data
-        if stream != b'':
-            self.stream = zlib.decompress(stream)
+        if type(data) == dict and 'Filter' in data:
+            if data['Filter'] == NameObject('FlateDecode'):
+#                print(stream)
+                self.stream = zlib.decompress(stream)
+            else:
+                print('Неподдерживается фильтр', data['Filter'])
+                self.stream = stream
         else:
-            self.stream = None
+            self.stream = stream
 
 
     def get(self, key):
