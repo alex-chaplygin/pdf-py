@@ -27,6 +27,8 @@ page_cache = {}
 # p1 = Page(resources={}, contents=(200, 0))
 Page = namedtuple('Page', 'resources media_box contents')
 
+media_box = (0, 0, 500, 800)
+
 
 def load(file_name):
     '''
@@ -36,6 +38,9 @@ def load(file_name):
     формирует дерево страниц
     '''
     global page_list
+    global page_cache
+    page_list.clear()
+    page_cache.clear()
     pdf_file.load(file_name)
     catalog = pdf_file.get_object(pdf_file.root_ref)
     if catalog.get('Type') != NameObject('Catalog'):
@@ -56,10 +61,13 @@ def load_pages(node):
         иначе ошибка
     '''
     global page_list
+    global media_box
     for i in node.get('Kids'):
         obj = pdf_file.get_object(i)
         if obj.get('Type') == NameObject('Page'):
-            page = Page(resources = obj.get('Resources'), media_box = obj.get('MediaBox'), contents = obj.get('Contents'))
+            if 'MediaBox' in obj.data:
+                media_box = obj.get('MediaBox')
+            page = Page(resources = obj.get('Resources'), media_box = media_box, contents = obj.get('Contents'))
             page_list.append(page)
         elif obj.get('Type') == NameObject('Pages'):
             load_pages(obj)
