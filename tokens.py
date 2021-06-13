@@ -138,6 +138,8 @@ def get_id():
             cur_char = chr(int(c1 + c2, 16))
         iden += cur_char
         cur_char = get_char()
+    if iden[0] == '.' and all([x in digits for x in iden[1:]]):
+        return ('num', float(iden))
     return ('id', iden)
 
 
@@ -189,9 +191,15 @@ def get_literal_string():
                 stroka += '('
             elif c1 == 'n':
                 stroka += '\n'
-            else:
+            elif c1 == 'r':
+                stroka += '\r'
+            elif c1 == '\\':
+                stroka += '\\'
+            elif c1 in digits:
                 c2, c3 = get_char(), get_char()
                 stroka += chr(int(c1 + c2 + c3, 8))
+            else:
+                stroka += '\\' + c1
         else:
             stroka += cur_char
         cur_char = get_char()
