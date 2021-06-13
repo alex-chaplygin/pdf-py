@@ -45,6 +45,8 @@ def parse_object():
         raise Exception('Ожидается endobj')
     if tok[1] != 'endobj':
         raise Exception('Ожидается endobj')
+#    print(data)
+#    print(stream)
     return Object(num1, num2, data, stream)
 
 
@@ -101,7 +103,7 @@ def parse_array():
     if 'R' in arr:
         arr2 = []
         for i in range(len(arr)):
-            if arr[i] == 'R':
+            if arr[i] == 'R' and type(arr2[-1]) == int and type(arr2[-2]) == int:
                 p2 = arr2.pop()
                 p1 = arr2.pop()
                 arr2.append((p1, p2))
@@ -170,9 +172,17 @@ def parse_stream(data_dict):
         s = b''
         while s[-9:] != b'endstream':
             s += get_bytes(1)
-#        print(s)
-        s = s[:-9].strip()
-#        print(s)
+#            print(s)
+        s = s[:-9]
+        if s[0] == ord('\n') or s[0] == ord('\r'):
+            s = s[1:]
+        if s[0] == ord('\n') or s[0] == ord('\r'):
+            s = s[1:]
+        if s[-1] == ord('\n') or s[-1] == ord('\r'):
+            s = s[:-1]
+        if s[-1] == ord('\n') or s[-1] == ord('\r'):
+            s = s[:-1]
+  #      print(s)
     else:
         s = get_bytes(length) # 0xa already read
         if s[0] == 0x0a:
@@ -182,7 +192,4 @@ def parse_stream(data_dict):
         if cur_token != ('id', 'endstream') and cur_token != ('id', 'xendstream'):
             raise Exception('No endstream')
     cur_token = get_token()
-    if data_dict['Filter'] != NameObject('FlateDecode'):
-        print('Неподдерживается фильтр', data_dict['Filter'])
-        return b''
     return s
