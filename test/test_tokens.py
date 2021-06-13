@@ -52,6 +52,7 @@ if __name__ == '__main__':
     test('3412', ('num', 3412))
     test('+3412', ('num', 3412))
     test('-3412', ('num', -3412))
+    test('.44', ('num', 0.44))
     print()
     test('(qwe)', ('str','qwe'))
     test('()', ('str',''))
