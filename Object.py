@@ -26,7 +26,7 @@ class Object:
                 io = BytesIO()
                 io.write(stream)
                 im = Image.open(io)
-                self.stream = im.getdata()
+                self.stream = list(im.getdata())
             else:
                 print('Неподдерживается фильтр', data['Filter'])
                 self.stream = None#stream
@@ -56,7 +56,8 @@ class Object:
         представление объекта в виде строки
         """
         s = '(Object ' + str(self.num1) + ' ' + str(self.num2) + ' ' + str(self.data) + ')\n'
-        if self.stream != None:
-            s += ''.join([chr(x) for x in self.stream])
+#        if self.stream != None:
+  #          s += ''.join([chr(x) for x in self.stream])
+        s += str(self.stream)
         return s
     
