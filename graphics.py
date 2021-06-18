@@ -30,6 +30,7 @@ ET
                 0 1.2 0
                 0 0 1
 '''
+import image
 import font
 import tokens
 import pdf_parser as parser
@@ -272,12 +273,31 @@ def begin_text():
     text_matrix = Matrix3()
     text_pos = [0, 0, 1]
 
-
     
 def set_leading():
     global text_leading
     text_leading = operands_stack.pop()
 
+
+def paint_xobject():
+    '''
+    рисует внешний объект
+
+    операнд - имя объекта как ключ из cловаря XObjects из ресурсов страницы
+    у внешнего объекта
+    Type - XObject
+    Subtype - Image, Form, PS
+    '''
+    xobj_name = operands_stack.pop()
+    if not xobj_name.data in current_page.resources['XObjects']:
+        print('Нет такого изображения', xobj_name)
+        return
+    im = image.load(current_page.resources['XObjects'][xobj_name.data])
+    im = image.interpolate(im, ctm.matrix[0][0], ctm.matrix[1][1])
+    if im != None:
+        coords = ctm.mult_vector((0, 0, 1))
+        object_list.append((coords[0], coords[1] - im.height, im.data, im.width, im.height, im.num_components, im.bpp))
+    
 
 stream_pos = 0
 
@@ -296,6 +316,7 @@ operators = {
     '\'': next_line_show_text,
     'TJ': show_text_list,
     'BT': begin_text,
+    'Do': paint_xobject,
 }
     
 def interpret(page, width, height):
