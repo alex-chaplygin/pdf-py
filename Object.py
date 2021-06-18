@@ -1,5 +1,7 @@
 import zlib
 from NameObject import *
+from PIL import Image
+from io import BytesIO
 
 
 class Object:
@@ -20,9 +22,14 @@ class Object:
             if data['Filter'] == NameObject('FlateDecode'):
 #                print(stream)
                 self.stream = zlib.decompress(stream)
+            elif data['Filter'] in [NameObject('JPXDecode'), NameObject('DCTDecode')]:
+                io = BytesIO()
+                io.write(stream)
+                im = Image.open(io)
+                self.stream = im.getdata()
             else:
                 print('Неподдерживается фильтр', data['Filter'])
-                self.stream = stream
+                self.stream = None#stream
         else:
             self.stream = stream
 
